@@ -1,0 +1,91 @@
+# =========================================================
+#  Ấm Vị — .gitignore dùng chung cho cả repo (api + web)
+# =========================================================
+
+# ---------- File prompt / tài liệu nội bộ (không push) ----------
+/FUNCTIONAL_SPEC.md
+/MASTER_PROMPT.md
+/NEW_UPDATE_FOR_MASTER_PROMPT.md
+
+# ---------- File bí mật / biến môi trường ----------
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets/
+secret/
+*credentials*.json
+*service-account*.json
+*serviceAccount*.json
+
+# ---------- Thư viện / extension tự cài (không cần push) ----------
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/cache/
+.yarn/install-state.gz
+.yarn/unplugged/
+.pnp.*
+bower_components/
+jspm_packages/
+
+# Prisma client sinh tự động
+**/generated/prisma/
+**/.prisma/
+
+# ---------- Build / cache / output ----------
+dist/
+build/
+out/
+.vite/
+.cache/
+.parcel-cache/
+.turbo/
+coverage/
+*.tsbuildinfo
+*.min.js.map
+
+# ---------- Ảnh upload khi dev (lưu đĩa cục bộ) ----------
+api/uploads/
+uploads/
+
+# ---------- Log ----------
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- IDE / editor (extension & cấu hình máy cá nhân) ----------
+.vscode/
+.vscode-test/
+.history/
+.idea/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.swo
+*~
+
+# ---------- Hệ điều hành ----------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+

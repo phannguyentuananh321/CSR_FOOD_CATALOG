@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #faf5ec;
+  --color-ivory: #fffdf8;
+  --color-olive: #354b35;
+  --color-olive-dark: #273727;
+  --color-olive-light: #4a654a;
+  --color-terracotta: #b86f45;
+  --color-terracotta-dark: #985732;
+  --color-charcoal: #292820;
+  --color-sand: #e9e0d2;
+  --color-sand-dark: #d4c7b3;
+  --color-muted: #7a7062;
+  --color-disabled: #c4bcb0;
+
+  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --animate-fog-a: fog-a 26s ease-in-out infinite alternate;
+  --animate-fog-b: fog-b 32s ease-in-out infinite alternate;
+  --animate-fog-c: fog-c 38s ease-in-out infinite alternate;
+  --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
+
+  @keyframes fog-a {
+    from { transform: translate3d(-6%, -4%, 0) scale(1); }
+    to { transform: translate3d(8%, 6%, 0) scale(1.15); }
+  }
+  @keyframes fog-b {
+    from { transform: translate3d(6%, 3%, 0) scale(1.1); }
+    to { transform: translate3d(-8%, -6%, 0) scale(0.95); }
+  }
+  @keyframes fog-c {
+    from { transform: translate3d(0%, 7%, 0) scale(1.05); }
+    to { transform: translate3d(4%, -7%, 0) scale(1.18); }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-cream font-sans text-charcoal antialiased;
+}
+
+/* Tắt chuyển động khi người dùng bật giảm chuyển động */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@utility line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@utility line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -1,0 +1,19 @@
+# Dependencies (tự cài bằng npm)
+node_modules/
+
+# Biến môi trường / bí mật
+.env
+.env.*
+!.env.example
+*.local
+
+# Build / cache
+dist/
+*.tsbuildinfo
+
+# IDE (extension tự cài, cấu hình máy cá nhân)
+.vscode/
+.idea/
+
+# Log
+*.log

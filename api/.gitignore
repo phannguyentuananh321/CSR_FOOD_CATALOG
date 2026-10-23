@@ -1,0 +1,23 @@
+# Dependencies (tự cài bằng npm)
+node_modules/
+
+# Biến môi trường / bí mật
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+
+# Prisma client sinh tự động
+**/generated/prisma/
+
+# Ảnh upload cục bộ khi dev
+uploads/
+
+# Log
+*.log
+
+# IDE (extension tự cài, cấu hình máy cá nhân)
+.vscode/
+.idea/

@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Dish {
+  id          Int              @id @default(autoincrement())
+  name        String           @db.VarChar(100)
+  description String?          @db.Text
+  price       Int              @default(0)
+  category    String           @default("Món chính") @db.VarChar(100)
+  imagePath   String?          @db.VarChar(500)
+  isFeatured  Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  chefs       DishChef[]
+  ingredients DishIngredient[]
+
+  @@map("dishes")
+}
+
+model Chef {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(100)
+  title       String?    @db.VarChar(150)
+  description String?    @db.Text
+  experience  String?    @db.VarChar(150)
+  imagePath   String?    @db.VarChar(500)
+  isFeatured  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  dishes      DishChef[]
+
+  @@map("chefs")
+}
+
+model Ingredient {
+  id          Int              @id @default(autoincrement())
+  name        String           @db.VarChar(100)
+  category    String?          @db.VarChar(100)
+  description String?          @db.Text
+  unit        String?          @default("gram") @db.VarChar(50)
+  imagePath   String?          @db.VarChar(500)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  dishes      DishIngredient[]
+
+  @@map("ingredients")
+}
+
+model DishChef {
+  dish   Dish @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  dishId Int
+  chef   Chef @relation(fields: [chefId], references: [id], onDelete: Cascade)
+  chefId Int
+
+  @@id([dishId, chefId])
+  @@map("dish_chefs")
+}
+
+model DishIngredient {
+  dish         Dish       @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  dishId       Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  ingredientId Int
+
+  @@id([dishId, ingredientId])
+  @@map("dish_ingredients")
+}

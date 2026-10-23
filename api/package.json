@@ -1,0 +1,31 @@
+{
+  "name": "am-vi-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "REST API cho website Ấm Vị — Food Editorial (dishes, chefs, ingredients)",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "db:seed": "node prisma/seed.js",
+    "test:api": "node scripts/test-api.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.0",
+    "@supabase/supabase-js": "^2.86.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.0",
+    "express": "^4.21.2",
+    "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "prisma": "^6.16.0"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  }
+}

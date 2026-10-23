@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Ảnh món ăn">
+  <rect width="400" height="300" fill="#E9E0D2"/>
+  <circle cx="200" cy="150" r="86" fill="#FAF5EC" stroke="#D4C7B3" stroke-width="3"/>
+  <circle cx="200" cy="150" r="62" fill="none" stroke="#B86F45" stroke-width="2" stroke-dasharray="5 6"/>
+  <path d="M178 118c0 6-4 9-8 12v48c0 4 3 8 8 8s8-4 8-8v-48c-4-3-8-6-8-12z" fill="#354B35" opacity="0.85"/>
+  <path d="M196 116v74c0 5 3 8 7 8s7-3 7-8v-74z" fill="#4A654A" opacity="0.85"/>
+  <path d="M214 118c0 6-4 9-8 12v48c0 4 3 8 8 8s8-4 8-8v-48c-4-3-8-6-8-12z" fill="#B86F45" opacity="0.85"/>
+  <ellipse cx="200" cy="238" rx="58" ry="7" fill="#D4C7B3"/>
+  <text x="200" y="272" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="15" fill="#7A7062">Ấm Vị</text>
+</svg>
