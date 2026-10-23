@@ -67,6 +67,7 @@ export default function AdminDishListPage() {
 
       <form onSubmit={submit} className="mt-6 flex flex-wrap items-center gap-3">
         <input
+          key={q}
           type="text"
           name="q"
           defaultValue={q}
@@ -74,6 +75,7 @@ export default function AdminDishListPage() {
           className="w-full max-w-xs rounded-xl border border-sand-dark bg-ivory px-4 py-2.5 text-sm outline-none transition focus:border-olive focus:ring-2 focus:ring-olive/20"
         />
         <select
+          key={category}
           name="category"
           defaultValue={category}
           className="rounded-xl border border-sand-dark bg-ivory px-4 py-2.5 text-sm outline-none transition focus:border-olive focus:ring-2 focus:ring-olive/20"

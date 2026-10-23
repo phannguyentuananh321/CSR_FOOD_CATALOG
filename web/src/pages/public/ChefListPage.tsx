@@ -50,6 +50,7 @@ export default function ChefListPage() {
           </p>
           <form onSubmit={submit} className="mt-8 flex max-w-xl flex-wrap gap-3">
             <input
+              key={q}
               type="text"
               name="q"
               defaultValue={q}

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import FeaturedCarousel from '../../components/FeaturedCarousel';
@@ -27,16 +27,11 @@ export default function DishListPage() {
   const page = searchParams.get('page') ?? '1';
 
   const [form, setForm] = useState({ q, category, minPrice, maxPrice, sort });
-  // Cập nhật form khi URL đổi (bấm link phân trang, đặt lại...).
-  if (
-    form.q !== q ||
-    form.category !== category ||
-    form.minPrice !== minPrice ||
-    form.maxPrice !== maxPrice ||
-    form.sort !== sort
-  ) {
+  // Chỉ đồng bộ lại form khi URL đổi (phân trang, đặt lại...).
+  // Không đồng bộ trong lúc render vì sẽ ghi đè ngay ký tự người dùng đang nhập.
+  useEffect(() => {
     setForm({ q, category, minPrice, maxPrice, sort });
-  }
+  }, [q, category, minPrice, maxPrice, sort]);
 
   const listParams: Record<string, string | number | undefined> = {
     q: q || undefined,
