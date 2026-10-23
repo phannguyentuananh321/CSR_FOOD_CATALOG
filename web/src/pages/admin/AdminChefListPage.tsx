@@ -60,6 +60,7 @@ export default function AdminChefListPage() {
 
       <form onSubmit={submit} className="mt-6 flex flex-wrap items-center gap-3">
         <input
+          key={q}
           type="text"
           name="q"
           defaultValue={q}
