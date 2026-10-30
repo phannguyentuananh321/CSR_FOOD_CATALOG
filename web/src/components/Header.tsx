@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
+import { useUserPreferences } from '../context/UserPreferencesContext';
 
 const publicLinks = [
   { to: '/dishes', label: 'Món Ăn' },
@@ -32,6 +33,7 @@ function Logo() {
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+  const { totalBookmarks } = useUserPreferences();
   const location = useLocation();
   const adminRef = useRef<HTMLDivElement>(null);
 
@@ -69,6 +71,16 @@ export default function Header() {
               {link.label}
             </NavLink>
           ))}
+          <NavLink to="/bookmarks" className={navClass} aria-label="Mục đã lưu">
+            <span className="flex items-center gap-1.5">
+              <span>Đã Lưu</span>
+              {totalBookmarks > 0 && (
+                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-terracotta px-1 text-[10px] font-bold text-white">
+                  {totalBookmarks}
+                </span>
+              )}
+            </span>
+          </NavLink>
           <div className="relative ml-2" ref={adminRef}>
             <button
               type="button"
@@ -151,6 +163,16 @@ export default function Header() {
                 {link.label}
               </NavLink>
             ))}
+            <NavLink key="/bookmarks" to="/bookmarks" className={navClass}>
+              <span className="flex items-center justify-between">
+                <span>Mục Đã Lưu</span>
+                {totalBookmarks > 0 && (
+                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-terracotta px-1.5 text-[10px] font-bold text-white">
+                    {totalBookmarks}
+                  </span>
+                )}
+              </span>
+            </NavLink>
           </div>
           <p className="mt-4 px-2 text-[11px] font-bold uppercase tracking-wider text-muted">
             Quản trị

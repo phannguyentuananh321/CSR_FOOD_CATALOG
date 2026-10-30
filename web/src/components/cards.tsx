@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Chef, Dish, DishBrief, Ingredient } from '../types';
 import { DEFAULT_CHEF_DESCRIPTION, DEFAULT_DISH_DESCRIPTION, DEFAULT_INGREDIENT_DESCRIPTION, formatPrice } from '../utils/format';
+import BookmarkButton from './BookmarkButton';
 import EntityImage from './EntityImage';
 
 export function DishCard({ dish }: { dish: Dish }) {
@@ -17,6 +18,9 @@ export function DishCard({ dish }: { dish: Dish }) {
             ★ Tuyển chọn
           </span>
         )}
+        <div className="absolute right-3 top-3 z-10">
+          <BookmarkButton type="dishes" id={dish.id} />
+        </div>
       </div>
       <div className="flex flex-1 flex-col p-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-terracotta">
@@ -58,6 +62,9 @@ export function ChefCard({ chef }: { chef: Chef }) {
             ★ Bếp trưởng tiêu biểu
           </span>
         )}
+        <div className="absolute right-3 top-3 z-10">
+          <BookmarkButton type="chefs" id={chef.id} />
+        </div>
       </div>
       <div className="flex flex-1 flex-col p-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-terracotta">
@@ -90,11 +97,16 @@ export function ChefCard({ chef }: { chef: Chef }) {
 export function IngredientCard({ ingredient }: { ingredient: Ingredient }) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-sand bg-ivory transition duration-300 hover:shadow-md">
-      <EntityImage
-        src={ingredient.imagePath}
-        alt={ingredient.name}
-        className="transition duration-500 group-hover:scale-105"
-      />
+      <div className="relative">
+        <EntityImage
+          src={ingredient.imagePath}
+          alt={ingredient.name}
+          className="transition duration-500 group-hover:scale-105"
+        />
+        <div className="absolute right-3 top-3 z-10">
+          <BookmarkButton type="ingredients" id={ingredient.id} />
+        </div>
+      </div>
       <div className="flex flex-1 flex-col p-5">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-terracotta">

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { removeImage } from '../lib/storage.js';
 import { assertRelationsExist } from '../services/relations.js';
+import { searchDishes } from '../services/search.js';
 import { h, notFoundError, ok, validationError } from '../utils/errors.js';
 import { serializeDishDetail, serializeDishListItem } from '../utils/serializers.js';
 import {
@@ -34,13 +35,36 @@ const DISH_INCLUDE_DETAIL = {
 // nới thời gian chờ để transaction tương tác không bị đóng giữa chừng.
 const TX_OPTIONS = { maxWait: 10000, timeout: 20000 };
 
-function buildWhere({ q, category, minPrice, maxPrice, featured }) {
+let cachedCategories = null;
+let lastCategoryFetch = 0;
+const CATEGORY_CACHE_TTL_MS = 60000;
+
+async function getCategories() {
+  const now = Date.now();
+  if (cachedCategories && now - lastCategoryFetch < CATEGORY_CACHE_TTL_MS) {
+    return cachedCategories;
+  }
+  const categoryRows = await prisma.dish.findMany({ select: { category: true }, distinct: ['category'] });
+  cachedCategories = categoryRows
+    .map((row) => row.category?.trim())
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, 'vi'));
+  lastCategoryFetch = now;
+  return cachedCategories;
+}
+
+function invalidateCategoryCache() {
+  cachedCategories = null;
+}
+
+function buildWhere({ q, category, minPrice, maxPrice, featured, ids }) {
   const where = {};
   if (q) where.name = { contains: q, mode: 'insensitive' };
   if (category) where.category = category;
   if (featured) where.isFeatured = true;
-  if (minPrice !== null) where.price = { ...(where.price || {}), gte: minPrice };
-  if (maxPrice !== null) where.price = { ...(where.price || {}), lte: maxPrice };
+  if (ids && ids.length > 0) where.id = { in: ids };
+  if (minPrice !== null && minPrice !== undefined) where.price = { ...(where.price || {}), gte: minPrice };
+  if (maxPrice !== null && maxPrice !== undefined) where.price = { ...(where.price || {}), lte: maxPrice };
   return where;
 }
 
@@ -96,26 +120,53 @@ router.get(
   '/',
   h(async (req, res) => {
     const query = parseListQuery(req.query);
-    const where = buildWhere({ ...query, featured: req.query.featured === '1' || req.query.featured === 'true' });
+    const featured = req.query.featured === '1' || req.query.featured === 'true';
 
-    const [total, rows, categoryRows] = await prisma.$transaction([
-      prisma.dish.count({ where }),
-      prisma.dish.findMany({
-        where,
-        orderBy: sortToOrderBy(query.sort),
-        skip: (query.page - 1) * query.limit,
-        take: query.limit,
-        include: {
-          _count: { select: { ingredients: true, chefs: true } },
-        },
-      }),
-      prisma.dish.findMany({ select: { category: true }, distinct: ['category'] }),
-    ]);
+    let total = 0;
+    let rows = [];
 
-    const categories = categoryRows
-      .map((row) => row.category?.trim())
-      .filter((c) => c)
-      .sort((a, b) => a.localeCompare(b, 'vi'));
+    if (query.q) {
+      const searchResult = await searchDishes({
+        q: query.q,
+        category: query.category,
+        minPrice: query.minPrice,
+        maxPrice: query.maxPrice,
+        featured,
+        ids: query.ids,
+        sort: query.sort,
+        page: query.page,
+        limit: query.limit,
+      });
+      total = searchResult.total;
+      if (searchResult.ids.length > 0) {
+        const found = await prisma.dish.findMany({
+          where: { id: { in: searchResult.ids } },
+          include: {
+            _count: { select: { ingredients: true, chefs: true } },
+          },
+        });
+        const map = new Map(found.map((item) => [item.id, item]));
+        rows = searchResult.ids.map((id) => map.get(id)).filter(Boolean);
+      }
+    } else {
+      const where = buildWhere({ ...query, featured });
+      const [count, list] = await prisma.$transaction([
+        prisma.dish.count({ where }),
+        prisma.dish.findMany({
+          where,
+          orderBy: sortToOrderBy(query.sort),
+          skip: (query.page - 1) * query.limit,
+          take: query.limit,
+          include: {
+            _count: { select: { ingredients: true, chefs: true } },
+          },
+        }),
+      ]);
+      total = count;
+      rows = list;
+    }
+
+    const categories = await getCategories();
     const totalPages = Math.max(1, Math.ceil(total / query.limit));
     res.json({
       ok: true,
@@ -173,6 +224,7 @@ router.post(
       return tx.dish.findUnique({ where: { id: created.id }, include: DISH_INCLUDE_DETAIL });
     }, TX_OPTIONS);
 
+    invalidateCategoryCache();
     ok(res, serializeDishDetail(dish));
   })
 );
@@ -226,6 +278,7 @@ router.patch(
       return tx.dish.findUnique({ where: { id: updated.id }, include: DISH_INCLUDE_DETAIL });
     }, TX_OPTIONS);
 
+    invalidateCategoryCache();
     ok(res, serializeDishDetail(dish));
   })
 );
@@ -244,6 +297,8 @@ router.delete(
       await tx.dishChef.deleteMany({ where: { dishId: id } });
       await tx.dish.delete({ where: { id } });
     }, TX_OPTIONS);
+
+    invalidateCategoryCache();
 
     // Xóa ảnh sau khi bản ghi đã xóa thành công; lỗi ảnh không làm hỏng thao tác chính.
     if (existing.imagePath) {

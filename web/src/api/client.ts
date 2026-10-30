@@ -174,10 +174,14 @@ export async function removeUploadedImage(path: string): Promise<void> {
   }
 }
 
-function queryString(params: Record<string, string | number | undefined>): string {
+function queryString(params: Record<string, string | number | number[] | undefined>): string {
   const sp = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === '') continue;
+    if (Array.isArray(value)) {
+      if (value.length > 0) sp.set(key, value.join(','));
+      continue;
+    }
     sp.set(key, String(value));
   }
   const s = sp.toString();
@@ -186,7 +190,7 @@ function queryString(params: Record<string, string | number | undefined>): strin
 
 export const api = {
   dishes: {
-    list: (params: Record<string, string | number | undefined>) =>
+    list: (params: Record<string, string | number | number[] | undefined>) =>
       requestList<Dish>(`/api/dishes${queryString(params)}`),
     detail: (id: number) => request<Dish>(`/api/dishes/${id}`),
     create: (body: Record<string, unknown>) => request<Dish>('/api/dishes', { method: 'POST', body }),
@@ -195,7 +199,7 @@ export const api = {
     remove: (id: number) => request<null>(`/api/dishes/${id}`, { method: 'DELETE' }),
   },
   chefs: {
-    list: (params: Record<string, string | number | undefined>) =>
+    list: (params: Record<string, string | number | number[] | undefined>) =>
       requestList<Chef>(`/api/chefs${queryString(params)}`),
     detail: (id: number) => request<Chef>(`/api/chefs/${id}`),
     create: (body: Record<string, unknown>) => request<Chef>('/api/chefs', { method: 'POST', body }),
@@ -204,7 +208,7 @@ export const api = {
     remove: (id: number) => request<null>(`/api/chefs/${id}`, { method: 'DELETE' }),
   },
   ingredients: {
-    list: (params: Record<string, string | number | undefined>) =>
+    list: (params: Record<string, string | number | number[] | undefined>) =>
       requestList<Ingredient>(`/api/ingredients${queryString(params)}`),
     detail: (id: number) => request<Ingredient>(`/api/ingredients/${id}`),
     create: (body: Record<string, unknown>) => request<Ingredient>('/api/ingredients', { method: 'POST', body }),

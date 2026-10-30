@@ -1,7 +1,9 @@
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
-import { DishMiniCard } from '../../components/cards';
+import BookmarkButton from '../../components/BookmarkButton';
 import EntityImage from '../../components/EntityImage';
+import ShareButton from '../../components/ShareButton';
+import { DishMiniCard } from '../../components/cards';
 import { ErrorPanel, LoadingBlock, NotFoundPanel } from '../../components/States';
 import { useFetch } from '../../hooks/useFetch';
 import { DEFAULT_CHEF_DESCRIPTION, entityCode, formatDate } from '../../utils/format';
@@ -33,12 +35,16 @@ export default function ChefDetailPage() {
         <Link to="/chefs" className="text-sm font-semibold text-olive underline-offset-4 hover:underline">
           ← Quay lại Danh Sách Đầu Bếp
         </Link>
-        <Link
-          to={`/admin/chefs/${chef.id}/edit`}
-          className="text-sm font-semibold text-terracotta underline-offset-4 hover:underline"
-        >
-          ✎ Quản trị đầu bếp này
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <BookmarkButton type="chefs" id={chef.id} showText />
+          <ShareButton />
+          <Link
+            to={`/admin/chefs/${chef.id}/edit`}
+            className="text-sm font-semibold text-terracotta underline-offset-4 hover:underline"
+          >
+            ✎ Quản trị đầu bếp này
+          </Link>
+        </div>
       </div>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-2">

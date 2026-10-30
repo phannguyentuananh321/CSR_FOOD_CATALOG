@@ -1,24 +1,27 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
+import { UserPreferencesProvider } from './context/UserPreferencesContext';
 import { ErrorBoundary, NotFoundPage, ServerErrorPage } from './pages/ErrorPages';
-import DishListPage from './pages/public/DishListPage';
-import DishDetailPage from './pages/public/DishDetailPage';
-import ChefListPage from './pages/public/ChefListPage';
+import BookmarksPage from './pages/public/BookmarksPage';
 import ChefDetailPage from './pages/public/ChefDetailPage';
-import IngredientListPage from './pages/public/IngredientListPage';
+import ChefListPage from './pages/public/ChefListPage';
+import DishDetailPage from './pages/public/DishDetailPage';
+import DishListPage from './pages/public/DishListPage';
 import IngredientDetailPage from './pages/public/IngredientDetailPage';
-import AdminDishListPage from './pages/admin/AdminDishListPage';
+import IngredientListPage from './pages/public/IngredientListPage';
 import AdminChefListPage from './pages/admin/AdminChefListPage';
+import AdminDishListPage from './pages/admin/AdminDishListPage';
 import AdminIngredientListPage from './pages/admin/AdminIngredientListPage';
-import DishFormPage from './pages/admin/DishFormPage';
 import ChefFormPage from './pages/admin/ChefFormPage';
-import IngredientFormPage from './pages/admin/IngredientFormPage';
 import DeleteConfirmPage from './pages/admin/DeleteConfirmPage';
+import DishFormPage from './pages/admin/DishFormPage';
+import IngredientFormPage from './pages/admin/IngredientFormPage';
 
 export default function App() {
   return (
     <ErrorBoundary>
-      <Routes>
+      <UserPreferencesProvider>
+        <Routes>
           <Route element={<AppLayout />}>
             <Route index element={<Navigate to="/dishes" replace />} />
 
@@ -28,6 +31,7 @@ export default function App() {
             <Route path="/chefs/:id" element={<ChefDetailPage />} />
             <Route path="/ingredients" element={<IngredientListPage />} />
             <Route path="/ingredients/:id" element={<IngredientDetailPage />} />
+            <Route path="/bookmarks" element={<BookmarksPage />} />
 
             <Route path="/admin/dishes" element={<AdminDishListPage />} />
             <Route path="/admin/dishes/new" element={<DishFormPage />} />
@@ -46,6 +50,7 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
+      </UserPreferencesProvider>
     </ErrorBoundary>
   );
 }

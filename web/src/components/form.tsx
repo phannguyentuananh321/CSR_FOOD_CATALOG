@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ApiError } from '../api/client';
+import { removeVietnameseTones } from '../utils/format';
 import EntityImage from './EntityImage';
 
 const IMAGE_TYPE_MESSAGE =
@@ -109,17 +110,25 @@ export function ImageUploadField({
   );
 }
 
+export interface RelationOption {
+  id: number;
+  label: string;
+  sub?: string | null;
+  imagePath?: string | null;
+}
+
 interface RelationChecklistProps {
   title: string;
   emptyMessage: string;
   createLink: string;
   createLabel: string;
-  options: { id: number; label: string; sub?: string | null; imagePath?: string | null }[];
+  options: RelationOption[];
   selectedIds: number[];
   onToggle: (id: number, checked: boolean) => void;
+  searchPlaceholder?: string;
 }
 
-// Khung checkbox quan hệ cuộn được (nguyên liệu/đầu bếp cho form món ăn).
+// Khung checkbox quan hệ cuộn được với tìm kiếm client-side (nguyên liệu/đầu bếp cho form món ăn).
 export function RelationChecklist({
   title,
   emptyMessage,
@@ -128,50 +137,196 @@ export function RelationChecklist({
   options,
   selectedIds,
   onToggle,
+  searchPlaceholder,
 }: RelationChecklistProps) {
-  const selected = new Set(selectedIds);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterMode, setFilterMode] = useState<'all' | 'selected'>('all');
+
+  const selected = useMemo(() => new Set(selectedIds), [selectedIds]);
+
+  // Lọc tìm kiếm bình thường ở client (không phân biệt hoa/thường và dấu tiếng Việt)
+  const filteredOptions = useMemo(() => {
+    let list = options;
+
+    if (filterMode === 'selected') {
+      list = list.filter((o) => selected.has(o.id));
+    }
+
+    const trimmed = searchTerm.trim();
+    if (trimmed) {
+      const termLower = trimmed.toLowerCase();
+      const termNoTone = removeVietnameseTones(trimmed);
+
+      list = list.filter((option) => {
+        const labelLower = option.label.toLowerCase();
+        const labelNoTone = removeVietnameseTones(option.label);
+        const subLower = (option.sub ?? '').toLowerCase();
+        const subNoTone = removeVietnameseTones(option.sub ?? '');
+
+        return (
+          labelLower.includes(termLower) ||
+          labelNoTone.includes(termNoTone) ||
+          subLower.includes(termLower) ||
+          subNoTone.includes(termNoTone)
+        );
+      });
+    }
+
+    // Đưa các mục đã chọn lên đầu, sau đó sắp xếp theo tên A-Z
+    return [...list].sort((a, b) => {
+      const aSel = selected.has(a.id) ? 1 : 0;
+      const bSel = selected.has(b.id) ? 1 : 0;
+      if (aSel !== bSel) return bSel - aSel;
+      return a.label.localeCompare(b.label, 'vi');
+    });
+  }, [options, searchTerm, filterMode, selected]);
+
+  const selectedCount = selectedIds.length;
+
   return (
-    <div className="rounded-2xl border border-sand bg-ivory p-4">
+    <div className="flex flex-col rounded-2xl border border-sand bg-ivory p-4">
+      {/* Tiêu đề & Link thêm mới */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-charcoal">{title}</h3>
+        <h3 className="flex items-center gap-2 text-sm font-bold text-charcoal">
+          <span>{title}</span>
+          {selectedCount > 0 && (
+            <span className="rounded-full bg-olive/15 px-2 py-0.5 text-xs font-semibold text-olive">
+              {selectedCount} đã chọn
+            </span>
+          )}
+        </h3>
         <a
           href={createLink}
+          target="_blank"
+          rel="noreferrer"
           className="text-xs font-semibold text-olive underline-offset-4 hover:underline"
         >
           {createLabel}
         </a>
       </div>
+
       {options.length === 0 ? (
         <p className="mt-3 rounded-xl bg-cream px-4 py-3 text-xs leading-relaxed text-muted">
           {emptyMessage}
         </p>
       ) : (
-        <div className="mt-3 max-h-56 space-y-1.5 overflow-y-auto pr-1">
-          {options.map((option) => (
-            <label
-              key={option.id}
-              className="flex cursor-pointer items-center gap-3 rounded-xl border border-sand px-3 py-2 transition hover:bg-cream"
-            >
-              <input
-                type="checkbox"
-                checked={selected.has(option.id)}
-                onChange={(e) => onToggle(option.id, e.target.checked)}
-                className="h-4 w-4 accent-olive"
-              />
-              {option.imagePath !== undefined && (
-                <span className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-sand">
-                  <EntityImage src={option.imagePath} alt={option.label} />
-                </span>
-              )}
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-medium text-charcoal">
-                  {option.label}
-                </span>
-                {option.sub && <span className="block text-xs text-muted">{option.sub}</span>}
+        <>
+          {/* Ô tìm kiếm client-side */}
+          <div className="relative mt-3">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-xs text-muted" aria-hidden="true">
+              🔍
+            </span>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={searchPlaceholder || 'Tìm kiếm...'}
+              className="w-full rounded-xl border border-sand-dark bg-white py-2 pl-8 pr-8 text-xs text-charcoal outline-none transition placeholder:text-muted focus:border-olive focus:ring-1 focus:ring-olive/30"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-xs font-bold text-muted transition hover:text-charcoal"
+                title="Xóa tìm kiếm"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Thanh chuyển tab: Tất cả / Đã chọn */}
+          <div className="mt-2.5 flex items-center justify-between text-xs">
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={() => setFilterMode('all')}
+                className={`rounded-lg px-2.5 py-1 font-medium transition ${
+                  filterMode === 'all'
+                    ? 'bg-sand font-semibold text-charcoal'
+                    : 'text-muted hover:text-charcoal'
+                }`}
+              >
+                Tất cả ({options.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterMode('selected')}
+                className={`rounded-lg px-2.5 py-1 font-medium transition ${
+                  filterMode === 'selected'
+                    ? 'bg-olive font-semibold text-white'
+                    : selectedCount > 0
+                    ? 'text-olive hover:bg-olive/10'
+                    : 'cursor-default text-muted/60'
+                }`}
+                disabled={selectedCount === 0 && filterMode !== 'selected'}
+              >
+                Đã chọn ({selectedCount})
+              </button>
+            </div>
+            {searchTerm && (
+              <span className="text-[11px] text-muted">
+                Khớp {filteredOptions.length}
               </span>
-            </label>
-          ))}
-        </div>
+            )}
+          </div>
+
+          {/* Danh sách cuộn checkbox */}
+          <div className="mt-2.5 max-h-56 space-y-1.5 overflow-y-auto pr-1">
+            {filteredOptions.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-sand-dark/60 bg-cream/60 px-4 py-6 text-center text-xs text-muted">
+                <p>Không tìm thấy mục nào khớp với &ldquo;{searchTerm}&rdquo;.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setFilterMode('all');
+                  }}
+                  className="mt-2 inline-block font-semibold text-olive underline-offset-2 hover:underline"
+                >
+                  Xem tất cả
+                </button>
+              </div>
+            ) : (
+              filteredOptions.map((option) => {
+                const isChecked = selected.has(option.id);
+                return (
+                  <label
+                    key={option.id}
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 transition ${
+                      isChecked
+                        ? 'border-olive/40 bg-olive/5 shadow-xs'
+                        : 'border-sand hover:bg-cream'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => onToggle(option.id, e.target.checked)}
+                      className="h-4 w-4 rounded accent-olive"
+                    />
+                    {option.imagePath !== undefined && (
+                      <span className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-sand">
+                        <EntityImage src={option.imagePath} alt={option.label} />
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <span className={`block truncate text-sm ${isChecked ? 'font-semibold text-charcoal' : 'font-medium text-charcoal'}`}>
+                        {option.label}
+                      </span>
+                      {option.sub && <span className="block text-xs text-muted">{option.sub}</span>}
+                    </div>
+                    {isChecked && (
+                      <span className="shrink-0 text-xs font-bold text-olive" title="Đã chọn">
+                        ✓
+                      </span>
+                    )}
+                  </label>
+                );
+              })
+            )}
+          </div>
+        </>
       )}
     </div>
   );

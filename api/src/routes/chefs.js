@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { removeImage } from '../lib/storage.js';
+import { searchChefs } from '../services/search.js';
 import { h, inUseError, notFoundError, ok, validationError } from '../utils/errors.js';
 import { serializeChefDetail, serializeChefListItem } from '../utils/serializers.js';
 import {
@@ -54,18 +55,46 @@ router.get(
   '/',
   h(async (req, res) => {
     const query = parseListQuery(req.query);
-    const where = query.q ? { name: { contains: query.q, mode: 'insensitive' } } : {};
+    const featured = req.query.featured === '1' || req.query.featured === 'true';
 
-    const [total, rows] = await prisma.$transaction([
-      prisma.chef.count({ where }),
-      prisma.chef.findMany({
-        where,
-        orderBy: [{ id: 'desc' }],
-        skip: (query.page - 1) * query.limit,
-        take: query.limit,
-        include: { _count: { select: { dishes: true } } },
-      }),
-    ]);
+    let total = 0;
+    let rows = [];
+
+    if (query.q) {
+      const searchResult = await searchChefs({
+        q: query.q,
+        featured,
+        ids: query.ids,
+        page: query.page,
+        limit: query.limit,
+      });
+      total = searchResult.total;
+      if (searchResult.ids.length > 0) {
+        const found = await prisma.chef.findMany({
+          where: { id: { in: searchResult.ids } },
+          include: { _count: { select: { dishes: true } } },
+        });
+        const map = new Map(found.map((item) => [item.id, item]));
+        rows = searchResult.ids.map((id) => map.get(id)).filter(Boolean);
+      }
+    } else {
+      const where = {};
+      if (featured) where.isFeatured = true;
+      if (query.ids && query.ids.length > 0) where.id = { in: query.ids };
+
+      const [count, list] = await prisma.$transaction([
+        prisma.chef.count({ where }),
+        prisma.chef.findMany({
+          where,
+          orderBy: [{ id: 'desc' }],
+          skip: (query.page - 1) * query.limit,
+          take: query.limit,
+          include: { _count: { select: { dishes: true } } },
+        }),
+      ]);
+      total = count;
+      rows = list;
+    }
 
     const totalPages = Math.max(1, Math.ceil(total / query.limit));
     res.json({

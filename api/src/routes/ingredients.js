@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { removeImage } from '../lib/storage.js';
+import { searchIngredients } from '../services/search.js';
 import { h, inUseError, notFoundError, ok, validationError } from '../utils/errors.js';
 import {
   serializeIngredientDetail,
@@ -52,22 +53,47 @@ router.get(
   '/',
   h(async (req, res) => {
     const query = parseListQuery(req.query);
-    const where = {};
-    if (query.q) where.name = { contains: query.q, mode: 'insensitive' };
-    if (query.category) where.category = query.category;
 
-    const [total, rows, categoryRows] = await prisma.$transaction([
-      prisma.ingredient.count({ where }),
-      prisma.ingredient.findMany({
-        where,
-        orderBy: [{ id: 'desc' }],
-        skip: (query.page - 1) * query.limit,
-        take: query.limit,
-        include: { _count: { select: { dishes: true } } },
-      }),
-      prisma.ingredient.findMany({ select: { category: true }, distinct: ['category'] }),
-    ]);
+    let total = 0;
+    let rows = [];
 
+    if (query.q) {
+      const searchResult = await searchIngredients({
+        q: query.q,
+        category: query.category,
+        ids: query.ids,
+        page: query.page,
+        limit: query.limit,
+      });
+      total = searchResult.total;
+      if (searchResult.ids.length > 0) {
+        const found = await prisma.ingredient.findMany({
+          where: { id: { in: searchResult.ids } },
+          include: { _count: { select: { dishes: true } } },
+        });
+        const map = new Map(found.map((item) => [item.id, item]));
+        rows = searchResult.ids.map((id) => map.get(id)).filter(Boolean);
+      }
+    } else {
+      const where = {};
+      if (query.category) where.category = query.category;
+      if (query.ids && query.ids.length > 0) where.id = { in: query.ids };
+
+      const [count, list] = await prisma.$transaction([
+        prisma.ingredient.count({ where }),
+        prisma.ingredient.findMany({
+          where,
+          orderBy: [{ id: 'desc' }],
+          skip: (query.page - 1) * query.limit,
+          take: query.limit,
+          include: { _count: { select: { dishes: true } } },
+        }),
+      ]);
+      total = count;
+      rows = list;
+    }
+
+    const categoryRows = await prisma.ingredient.findMany({ select: { category: true }, distinct: ['category'] });
     const categories = categoryRows
       .map((row) => row.category?.trim())
       .filter((c) => c)

@@ -1,7 +1,9 @@
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
-import { DishMiniCard } from '../../components/cards';
+import BookmarkButton from '../../components/BookmarkButton';
 import EntityImage from '../../components/EntityImage';
+import ShareButton from '../../components/ShareButton';
+import { DishMiniCard } from '../../components/cards';
 import { ErrorPanel, LoadingBlock, NotFoundPanel } from '../../components/States';
 import { useFetch } from '../../hooks/useFetch';
 import { DEFAULT_INGREDIENT_DESCRIPTION, entityCode, formatDate } from '../../utils/format';
@@ -38,12 +40,16 @@ export default function IngredientDetailPage() {
         >
           ← Quay lại Danh Sách Nguyên Liệu
         </Link>
-        <Link
-          to={`/admin/ingredients/${ingredient.id}/edit`}
-          className="text-sm font-semibold text-terracotta underline-offset-4 hover:underline"
-        >
-          ✎ Quản trị nguyên liệu này
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <BookmarkButton type="ingredients" id={ingredient.id} showText />
+          <ShareButton />
+          <Link
+            to={`/admin/ingredients/${ingredient.id}/edit`}
+            className="text-sm font-semibold text-terracotta underline-offset-4 hover:underline"
+          >
+            ✎ Quản trị nguyên liệu này
+          </Link>
+        </div>
       </div>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-2">

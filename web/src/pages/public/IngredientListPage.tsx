@@ -1,22 +1,48 @@
-import { type FormEvent } from 'react';
+import { useMemo, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { IngredientCard } from '../../components/cards';
 import Fog from '../../components/Fog';
-import Pagination from '../../components/Pagination';
+import PaginationControls from '../../components/PaginationControls';
+import PaginationModeSelector from '../../components/PaginationModeSelector';
+import ShareButton from '../../components/ShareButton';
 import { EmptyState, ErrorPanel, LoadingBlock } from '../../components/States';
-import { useFetch } from '../../hooks/useFetch';
+import { usePaginatedList } from '../../hooks/usePaginatedList';
+import type { Ingredient } from '../../types';
 
 export default function IngredientListPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get('q') ?? '';
   const category = searchParams.get('category') ?? '';
-  const page = searchParams.get('page') ?? '1';
 
-  const { state, retry } = useFetch(
-    () => api.ingredients.list({ q: q || undefined, category: category || undefined, page }),
-    [q, category, page]
+  const listParams = useMemo(
+    () => ({
+      q: q || undefined,
+      category: category || undefined,
+    }),
+    [q, category]
   );
+  const filterKey = `${q}|${category}`;
+
+  const {
+    items,
+    meta,
+    loading,
+    loadingMore,
+    error,
+    currentMode,
+    currentPage,
+    hasMore,
+    changeMode,
+    loadNextPage,
+    makePageLink,
+    sentinelRef,
+    retry,
+  } = usePaginatedList<Ingredient>({
+    fetchFn: api.ingredients.list,
+    filterParams: listParams,
+    filterKey,
+  });
 
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,16 +52,13 @@ export default function IngredientListPage() {
     if (keyword) next.set('q', keyword);
     const cat = String(data.get('category') ?? '');
     if (cat) next.set('category', cat);
+    if (searchParams.get('displayMode')) {
+      next.set('displayMode', searchParams.get('displayMode')!);
+    }
     setSearchParams(next);
   };
 
-  const makePageLink = (p: number) => {
-    const next = new URLSearchParams(searchParams);
-    next.set('page', String(p));
-    return `/ingredients?${next.toString()}`;
-  };
-
-  const categories = state.status === 'success' ? (state.data.meta.categories ?? []) : [];
+  const categories = meta.categories ?? [];
   const hasFilter = Boolean(q || category);
 
   return (
@@ -60,7 +83,7 @@ export default function IngredientListPage() {
               type="text"
               name="q"
               defaultValue={q}
-              placeholder="Tìm kiếm nguyên liệu, gia vị..."
+              placeholder="Tìm theo tên, danh mục, đơn vị, mô tả..."
               className="min-w-0 flex-1 rounded-xl border border-sand-dark bg-ivory px-4 py-2.5 text-sm outline-none transition focus:border-olive focus:ring-2 focus:ring-olive/20"
             />
             <select
@@ -95,9 +118,24 @@ export default function IngredientListPage() {
       </section>
 
       <section className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
-        {state.status === 'loading' && <LoadingBlock />}
-        {state.status === 'error' && <ErrorPanel message={state.message} onRetry={retry} />}
-        {state.status === 'success' && state.data.data.length === 0 && (
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            {!loading && (
+              <p className="text-sm text-muted">
+                {meta.total} nguyên liệu tinh tuyển
+                {currentMode !== 'numbered' && items.length > 0 && ` • Đang hiển thị ${items.length} nguyên liệu`}
+              </p>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <ShareButton label="Chia sẻ trang này" />
+            <PaginationModeSelector currentMode={currentMode} onModeChange={changeMode} />
+          </div>
+        </div>
+
+        {loading && <LoadingBlock />}
+        {error && <ErrorPanel message={error} onRetry={retry} />}
+        {!loading && !error && items.length === 0 && (
           <EmptyState
             title="Không Tìm Thấy Nguyên Liệu"
             description="Không có nguyên liệu nào khớp với từ khóa hoặc bộ lọc của bạn."
@@ -105,15 +143,23 @@ export default function IngredientListPage() {
             actionLink="/ingredients"
           />
         )}
-        {state.status === 'success' && state.data.data.length > 0 && (
+        {!loading && !error && items.length > 0 && (
           <>
-            <p className="mb-6 text-sm text-muted">{state.data.meta.total} nguyên liệu tinh tuyển</p>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {state.data.data.map((ingredient) => (
+              {items.map((ingredient) => (
                 <IngredientCard key={ingredient.id} ingredient={ingredient} />
               ))}
             </div>
-            <Pagination meta={state.data.meta} makeLink={makePageLink} />
+            <PaginationControls
+              meta={{ ...meta, page: currentPage }}
+              currentMode={currentMode}
+              hasMore={hasMore}
+              loadingMore={loadingMore}
+              onLoadMore={loadNextPage}
+              makeLink={makePageLink}
+              sentinelRef={sentinelRef}
+              itemName="nguyên liệu"
+            />
           </>
         )}
       </section>

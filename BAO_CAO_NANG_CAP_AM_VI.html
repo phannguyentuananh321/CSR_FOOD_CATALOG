@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Cáo Kiến Trúc & Triển Khai Nâng Cấp — Ấm Vị Food Editorial</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+            mono: ['"Fira Code"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              ivory: '#FAF7F2',
+              cream: '#F4EFE6',
+              sand: '#E6DCB8',
+              olive: '#4D6B53',
+              oliveDark: '#3A523F',
+              terracotta: '#D95D39',
+              saffron: '#E89828',
+              charcoal: '#232526',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #FAF7F2;
+      color: #232526;
+      scroll-behavior: smooth;
+    }
+    .gradient-header {
+      background: linear-gradient(135deg, #FFFDF9 0%, #F5EFEB 50%, #ECE3DC 100%);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(220, 210, 195, 0.6);
+    }
+    .badge-glow {
+      box-shadow: 0 0 15px rgba(217, 93, 57, 0.25);
+    }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-brand-terracotta selection:text-white">
+
+  <!-- TOP ANNOUNCEMENT BAR -->
+  <div class="bg-brand-olive text-white py-2 px-4 text-center text-xs sm:text-sm font-semibold tracking-wide">
+    🌟 BÁO CÁO KỸ THUẬT NÂNG CẤP HỆ THỐNG WEBSITE ẤM VỊ — 100% TEST PASS & ĐÃ SEED 1.002 MÓN ĂN
+  </div>
+
+  <!-- HERO SECTION -->
+  <header class="gradient-header border-b border-brand-sand/60 relative overflow-hidden py-16 sm:py-24">
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-brand-terracotta/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-brand-olive/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="inline-flex items-center gap-2 rounded-full border border-brand-terracotta/30 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-brand-terracotta mb-6 badge-glow">
+        <span class="w-2 h-2 rounded-full bg-brand-terracotta animate-ping"></span>
+        Technical Architecture & Implementation Review
+      </div>
+      <h1 class="font-serif text-4xl sm:text-6xl font-bold leading-tight text-brand-charcoal">
+        Giải Pháp Nâng Cấp Hệ Thống <br>
+        <span class="text-brand-olive italic">Ấm Vị — Food Editorial</span>
+      </h1>
+      <p class="mt-6 max-w-3xl text-base sm:text-lg text-gray-600 leading-relaxed font-normal">
+        Tài liệu trình bày kiến trúc toàn diện về <strong>Tech Stack</strong>, cơ chế <strong>Full-text & Fuzzy Search PostgreSQL</strong>, trải nghiệm <strong>Phân trang 3 chế độ</strong>, quản lý <strong>Bookmark & Chia sẻ liên kết thông minh</strong>, và tiến trình hiện thực hóa các quyết định nghiệm thu từ người dùng.
+      </p>
+
+      <!-- Quick Metrics -->
+      <div class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="glass-card p-4 rounded-2xl shadow-sm text-center">
+          <div class="text-3xl font-bold text-brand-terracotta">1.002</div>
+          <div class="text-xs text-gray-500 font-medium mt-1">Món ăn trong Database</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl shadow-sm text-center">
+          <div class="text-3xl font-bold text-brand-olive">3 Chế Độ</div>
+          <div class="text-xs text-gray-500 font-medium mt-1">Phân trang công khai</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl shadow-sm text-center">
+          <div class="text-3xl font-bold text-blue-600">pg_trgm</div>
+          <div class="text-xs text-gray-500 font-medium mt-1">Fuzzy + Unaccent Search</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl shadow-sm text-center">
+          <div class="text-3xl font-bold text-emerald-600">49 / 49</div>
+          <div class="text-xs text-gray-500 font-medium mt-1">API Unit/E2E Test PASS</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-brand-sand/70 shadow-xs">
+    <div class="max-w-6xl mx-auto px-4 flex gap-4 overflow-x-auto text-sm font-semibold py-3 text-gray-600">
+      <a href="#tech-stack" class="hover:text-brand-terracotta transition shrink-0">1. Tech Stack</a>
+      <a href="#search-engine" class="hover:text-brand-terracotta transition shrink-0">2. Công Nghệ Tìm Kiếm</a>
+      <a href="#pagination-modes" class="hover:text-brand-terracotta transition shrink-0">3. Ba Chế Độ Phân Trang</a>
+      <a href="#bookmark-system" class="hover:text-brand-terracotta transition shrink-0">4. Bookmark & State Root</a>
+      <a href="#sharing-page-2" class="hover:text-brand-terracotta transition shrink-0">5. Bài Toán Chia Sẻ Trang 2</a>
+      <a href="#decision-matrix" class="hover:text-brand-terracotta transition shrink-0">6. Hiện Thực Hóa Quyết Định</a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+
+    <!-- SECTION 1: TECH STACK -->
+    <section id="tech-stack" class="scroll-mt-20">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-xl bg-brand-olive text-white flex items-center justify-center font-bold text-sm">01</span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-brand-charcoal">Kiến Trúc Kỹ Thuật (Tech Stack)</h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Frontend Card -->
+        <div class="glass-card p-6 rounded-3xl shadow-sm border-t-4 border-t-brand-olive hover:shadow-md transition">
+          <div class="w-12 h-12 rounded-2xl bg-brand-olive/10 text-brand-olive flex items-center justify-center text-2xl mb-4">⚛️</div>
+          <h3 class="text-xl font-bold text-brand-charcoal">Frontend (SPA)</h3>
+          <p class="text-sm text-gray-500 mt-1 mb-4">Chạy độc lập trên cổng <code>:5173</code></p>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex items-start gap-2"><span>•</span><strong>React 19 + TypeScript:</strong> Type-safety tuyệt đối, quản lý component hiện đại.</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>Vite:</strong> Đóng gói siêu tốc (build production chỉ ~8s).</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>React Router v7:</strong> Client-side routing, quản lý searchParams đồng bộ URL.</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>Tailwind CSS v4:</strong> Styling utility tinh tế, chuẩn giao diện Ấm Vị.</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>React Context:</strong> Quản lý state nhẹ tại Root App lưu vào <code>localStorage</code>.</li>
+          </ul>
+        </div>
+
+        <!-- Backend Card -->
+        <div class="glass-card p-6 rounded-3xl shadow-sm border-t-4 border-t-brand-terracotta hover:shadow-md transition">
+          <div class="w-12 h-12 rounded-2xl bg-brand-terracotta/10 text-brand-terracotta flex items-center justify-center text-2xl mb-4">🚀</div>
+          <h3 class="text-xl font-bold text-brand-charcoal">Backend REST API</h3>
+          <p class="text-sm text-gray-500 mt-1 mb-4">Chạy độc lập trên cổng <code>:3000</code></p>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex items-start gap-2"><span>•</span><strong>Node.js (ESM) + Express 4:</strong> Router gọn gàng, kiến trúc module sạch.</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>Prisma ORM v6:</strong> Truy vấn quan hệ M:N, transaction và kiểm soát schema.</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>Prisma $queryRaw:</strong> Truy vấn parameterized SQL an toàn chống SQL Injection.</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>Multer:</strong> Tiếp nhận file upload cục bộ hoặc đẩy Supabase Storage.</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>CORS Middleware:</strong> Ràng buộc chặt chẽ origin từ biến môi trường.</li>
+          </ul>
+        </div>
+
+        <!-- Database Card -->
+        <div class="glass-card p-6 rounded-3xl shadow-sm border-t-4 border-t-brand-saffron hover:shadow-md transition">
+          <div class="w-12 h-12 rounded-2xl bg-brand-saffron/10 text-brand-saffron flex items-center justify-center text-2xl mb-4">🗄️</div>
+          <h3 class="text-xl font-bold text-brand-charcoal">Database & Cloud</h3>
+          <p class="text-sm text-gray-500 mt-1 mb-4">Supabase Cloud PostgreSQL</p>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex items-start gap-2"><span>•</span><strong>PostgreSQL:</strong> Hệ quản trị CSDL quan hệ chính xác cao.</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>Extension pg_trgm (v1.6):</strong> Đã kích hoạt cho đo độ tương đồng trigram (Fuzzy Search).</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>Extension unaccent (v1.1):</strong> Loại bỏ dấu tiếng Việt chuẩn quốc tế.</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>to_tsvector & to_tsquery:</strong> Bộ máy Full-text Search tích hợp của PostgreSQL.</li>
+            <li class="flex items-start gap-2"><span>•</span><strong>Supabase Storage:</strong> Lưu trữ CDN hình ảnh món ăn, đầu bếp.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: SEARCH ENGINE -->
+    <section id="search-engine" class="scroll-mt-20">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">02</span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-brand-charcoal">Công Nghệ Tìm Kiếm: Full-Text & Fuzzy Search</h2>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8 rounded-3xl shadow-sm space-y-6">
+        <p class="text-gray-700 leading-relaxed">
+          Thay vì sử dụng tìm kiếm chuỗi con <code>ILIKE '%q%'</code> thông thường vốn chỉ tìm được một trường và không chịu được lỗi chính tả, hệ thống được nâng cấp thành <strong>Công cụ Tìm kiếm Lai (Hybrid Search Engine)</strong> chạy trực tiếp trên PostgreSQL với 3 tầng xử lý:
+        </p>
+
+        <!-- 3 Layers Flowchart -->
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="bg-blue-50/70 border border-blue-200 p-5 rounded-2xl">
+            <span class="inline-block px-2.5 py-1 bg-blue-600 text-white text-xs font-bold rounded-lg mb-2">TẦNG 1 (Ưu tiên 100đ - 80đ)</span>
+            <h4 class="font-bold text-blue-900 text-base">Khớp chính xác & Substring</h4>
+            <p class="text-xs text-blue-800 mt-2 leading-relaxed">
+              Dùng <code>unaccent(lower(text)) LIKE '%' || unaccent(lower(q)) || '%'</code>. Tìm kiếm nhanh trên tên món và các trường phụ. Khớp tên đầy đủ xếp đầu tiên.
+            </p>
+          </div>
+
+          <div class="bg-emerald-50/70 border border-emerald-200 p-5 rounded-2xl">
+            <span class="inline-block px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg mb-2">TẦNG 2 (Ưu tiên 50đ)</span>
+            <h4 class="font-bold text-emerald-900 text-base">Full-Text Search Đa Trường</h4>
+            <p class="text-xs text-emerald-800 mt-2 leading-relaxed">
+              Dùng <code>to_tsvector('simple', unaccent(...)) @@ plainto_tsquery('simple', unaccent(q))</code>. Gom tên, mô tả, danh mục thành vector văn bản để tìm kiếm ngữ nghĩa từ khóa tự nhiên.
+            </p>
+          </div>
+
+          <div class="bg-amber-50/70 border border-amber-200 p-5 rounded-2xl">
+            <span class="inline-block px-2.5 py-1 bg-amber-600 text-white text-xs font-bold rounded-lg mb-2">TẦNG 3 (Ưu tiên ~40đ)</span>
+            <h4 class="font-bold text-amber-900 text-base">Fuzzy Search (pg_trgm)</h4>
+            <p class="text-xs text-amber-800 mt-2 leading-relaxed">
+              Dùng <code>word_similarity(unaccent(lower(q)), unaccent(lower(name))) &gt;= 0.4</code>. Cho phép tìm ra món ăn ngay cả khi người dùng gõ sai 1-2 ký tự (typo) hoặc thiếu dấu.
+            </p>
+          </div>
+        </div>
+
+        <!-- Matrix Scope Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm border-collapse border border-brand-sand rounded-xl overflow-hidden">
+            <thead>
+              <tr class="bg-brand-cream text-brand-charcoal font-bold">
+                <th class="p-3 border-b border-brand-sand">Tài nguyên</th>
+                <th class="p-3 border-b border-brand-sand">Các trường được đánh chỉ mục tìm kiếm</th>
+                <th class="p-3 border-b border-brand-sand">Khu vực áp dụng</th>
+                <th class="p-3 border-b border-brand-sand">Ví dụ thực tế đã kiểm thử</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-brand-sand/50 text-gray-700">
+              <tr>
+                <td class="p-3 font-semibold text-brand-olive">Dishes (Món ăn)</td>
+                <td class="p-3"><code>name</code>, <code>description</code>, <code>category</code></td>
+                <td class="p-3">Public (/dishes) & Admin (/admin/dishes)</td>
+                <td class="p-3">Gõ <code>pho bof</code> hoặc <code>pho bo</code> đều ra <em>Phở bò tái lăn Hà Lội</em></td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-brand-terracotta">Chefs (Đầu bếp)</td>
+                <td class="p-3"><code>name</code>, <code>title</code>, <code>experience</code>, <code>description</code></td>
+                <td class="p-3">Public (/chefs) & Admin (/admin/chefs)</td>
+                <td class="p-3">Gõ <code>bep truong</code> tìm thấy đầu bếp có chức danh <em>Bếp trưởng</em></td>
+              </tr>
+              <tr>
+                <td class="p-3 font-semibold text-brand-saffron">Ingredients (Nguyên liệu)</td>
+                <td class="p-3"><code>name</code>, <code>category</code>, <code>description</code>, <code>unit</code></td>
+                <td class="p-3">Public (/ingredients) & Admin (/admin/ingredients)</td>
+                <td class="p-3">Gõ <code>gram</code> hoặc <code>thao moc</code> ra nguyên liệu tương ứng</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: PAGINATION -->
+    <section id="pagination-modes" class="scroll-mt-20">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-sm">03</span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-brand-charcoal">Ba Chế Độ Phân Trang Khu Vực Công Khai</h2>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8 rounded-3xl shadow-sm space-y-6">
+        <p class="text-gray-700 leading-relaxed">
+          Người dùng có thể tự do bấm chọn chế độ hiển thị ưa thích ở góc trên danh sách. Lựa chọn này được lưu vào <code>localStorage</code> và tự động đồng bộ lên URL qua tham số <code>displayMode</code>:
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="p-5 rounded-2xl bg-white border border-gray-200 space-y-3">
+            <div class="flex items-center gap-2 text-brand-olive font-bold text-base">
+              <span>🔢</span> 1. Numbered Pagination
+            </div>
+            <p class="text-xs text-gray-600 leading-relaxed">
+              <strong>Thanh số trang truyền thống:</strong> Hiển thị nút <code>« Trước</code>, các số trang (ví dụ 1, 2, 3...) và <code>Sau »</code>.
+            </p>
+            <div class="text-[11px] bg-gray-50 p-2.5 rounded-xl border border-gray-200 text-gray-700 font-mono">
+              GET /api/dishes?page=2&limit=9
+            </div>
+            <p class="text-xs text-gray-500">Phù hợp khi muốn tra cứu nhanh hoặc nhảy thẳng tới trang cụ thể.</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-gray-200 space-y-3">
+            <div class="flex items-center gap-2 text-brand-terracotta font-bold text-base">
+              <span>⏬</span> 2. Load More (Xem Thêm)
+            </div>
+            <p class="text-xs text-gray-600 leading-relaxed">
+              <strong>Nút bấm tải thêm chủ động:</strong> Khi bấm "Xem Thêm Món Ăn", client gọi trang N+1, nối tiếp vào danh sách cũ mà <em>không reload trang</em>.
+            </p>
+            <div class="text-[11px] bg-gray-50 p-2.5 rounded-xl border border-gray-200 text-gray-700 font-mono">
+              items = [...prev, ...nextUnique]
+            </div>
+            <p class="text-xs text-gray-500">Tự động ẩn nút và hiện thông báo <em>"Đã hiển thị tất cả 1.002 món ăn"</em> khi hết dữ liệu.</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-gray-200 space-y-3">
+            <div class="flex items-center gap-2 text-purple-700 font-bold text-base">
+              <span>♾️</span> 3. Infinite Scroll (Cuộn vô tận)
+            </div>
+            <p class="text-xs text-gray-600 leading-relaxed">
+              <strong>Tự động tải khi cuộn:</strong> Đặt một <code>sentinel element</code> ở đáy danh sách và theo dõi bằng <code>IntersectionObserver</code>.
+            </p>
+            <div class="text-[11px] bg-gray-50 p-2.5 rounded-xl border border-gray-200 text-gray-700 font-mono">
+              rootMargin: '200px' (tải trước)
+            </div>
+            <p class="text-xs text-gray-500">Mang lại trải nghiệm lướt xem thực đơn liên tục, mượt mà như mạng xã hội hiện đại.</p>
+          </div>
+        </div>
+
+        <div class="bg-brand-ivory border border-brand-sand p-4 rounded-2xl text-xs text-gray-700 space-y-1">
+          <p><strong>🔒 Cơ chế chống trùng bản ghi:</strong> Custom hook <code>usePaginatedList</code> sử dụng <code>Set(prev.map(i => i.id))</code> để lọc bỏ hoàn toàn bất kỳ ID nào đã có trong danh sách trước khi nối dữ liệu mới.</p>
+          <p><strong>⚖️ Phân trang quản trị:</strong> Các trang <code>/admin/dishes</code>, <code>/admin/chefs</code>, <code>/admin/ingredients</code> vẫn giữ nguyên 100% chế độ Numbered Pagination 10 mục/trang theo đúng yêu cầu đề bài.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: BOOKMARK SYSTEM -->
+    <section id="bookmark-system" class="scroll-mt-20">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-xl bg-brand-terracotta text-white flex items-center justify-center font-bold text-sm">04</span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-brand-charcoal">Hệ Thống Bookmark & Trạng Thái Root App</h2>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8 rounded-3xl shadow-sm space-y-6">
+        <div class="grid md:grid-cols-2 gap-8 items-center">
+          <div class="space-y-4">
+            <h3 class="text-xl font-bold text-brand-charcoal">Kiến Trúc Quản Lý State Không Cần Backend Server</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">
+              Để đáp ứng tiêu chí <strong>không overengineering</strong>, không bắt buộc người dùng đăng nhập tài khoản mà vẫn lưu giữ được các món ăn/đầu bếp yêu thích:
+            </p>
+            <ul class="space-y-2 text-sm text-gray-700">
+              <li class="flex items-start gap-2">
+                <span class="text-brand-terracotta">✔</span>
+                <span><strong>Lưu trữ tại Root App:</strong> React Context <code>UserPreferencesContext</code> bọc toàn bộ ứng dụng tại <code>App.tsx</code>.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-brand-terracotta">✔</span>
+                <span><strong>Chỉ lưu ID vào localStorage:</strong> Key <code>am_vi_bookmarks</code> chỉ chứa cấu trúc mảng ID: <code>{ dishes: [21, 22], chefs: [15], ingredients: [12] }</code>. Không lưu đè dữ liệu nghiệp vụ vào global state.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-brand-terracotta">✔</span>
+                <span><strong>Tự động dọn rác (Orphan Cleanup):</strong> Khi mở trang <code>/bookmarks</code>, nếu có bản ghi đã bị admin xóa khỏi database, hệ thống sẽ tự động loại bỏ ID đó khỏi <code>localStorage</code>.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-brand-terracotta">✔</span>
+                <span><strong>Badge đếm số lượng thời gian thực:</strong> Biểu tượng "Đã Lưu" trên Header luôn hiển thị số lượng mục đang lưu trên cả máy tính và điện thoại.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="bg-brand-cream/80 border border-brand-sand p-6 rounded-2xl space-y-4 text-xs font-mono text-gray-800">
+            <div class="flex items-center justify-between pb-2 border-b border-brand-sand">
+              <span class="font-bold text-brand-terracotta font-sans text-sm">localStorage Snapshot</span>
+              <span class="text-[10px] bg-white px-2 py-0.5 rounded border border-brand-sand">JSON</span>
+            </div>
+            <pre class="overflow-x-auto text-[11px] leading-relaxed">
+{
+  <span class="text-brand-olive font-bold">"am_vi_bookmarks"</span>: {
+    <span class="text-blue-600">"dishes"</span>: [21, 22, 105, 314],
+    <span class="text-blue-600">"chefs"</span>: [15],
+    <span class="text-blue-600">"ingredients"</span>: [12, 18]
+  },
+  <span class="text-brand-olive font-bold">"am_vi_display_mode"</span>: <span class="text-amber-700">"load_more"</span>
+}</pre>
+            <p class="text-gray-500 font-sans text-[11px]">
+              Khi vào trang <code>/bookmarks</code>, API Client gọi batch: <br>
+              <code>GET /api/dishes?ids=21,22,105,314</code> để lấy chi tiết mới nhất.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: SHARING PAGE ACCUMULATION DEEP DIVE -->
+    <section id="sharing-page-2" class="scroll-mt-20">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">05</span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-brand-charcoal">Phương Án A: Khôi Phục Toàn Bộ Số Món Đã Tải Khi Chia Sẻ</h2>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8 rounded-3xl shadow-sm border-2 border-emerald-500/40 space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-brand-sand">
+          <div>
+            <h3 class="text-xl font-bold text-brand-charcoal">Nguyên lý hoạt động theo Phương án A:</h3>
+            <p class="text-base text-brand-olive font-semibold mt-1">
+              "Người gửi đã nạp tới trang N (ví dụ 27 món) → Người nhận mở link sẽ thấy đủ 27 món ngay từ đầu"
+            </p>
+          </div>
+          <span class="px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-sm border border-emerald-300">
+            ĐÃ TRIỂN KHAI HOÀN CHỈNH
+          </span>
+        </div>
+
+        <!-- 3-Step Progression Visual -->
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="p-4 rounded-2xl bg-white border border-gray-200 space-y-2">
+            <span class="text-xs font-bold text-brand-olive uppercase tracking-wider">Bước 1: Lần đầu mở</span>
+            <div class="text-2xl font-bold text-brand-charcoal">9 món ăn</div>
+            <p class="text-xs text-gray-500">Mở <code>/dishes</code> lần đầu: hệ thống tải trang 1 (9 món).</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white border border-gray-200 space-y-2">
+            <span class="text-xs font-bold text-brand-terracotta uppercase tracking-wider">Bước 2: Bấm Xem thêm</span>
+            <div class="text-2xl font-bold text-brand-charcoal">18 món ăn</div>
+            <p class="text-xs text-gray-500">Tải trang 2, nối tiếp vào trang 1. URL tự cập nhật <code>page=2</code>.</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white border border-gray-200 space-y-2">
+            <span class="text-xs font-bold text-purple-700 uppercase tracking-wider">Bước 3: Xem thêm lần nữa</span>
+            <div class="text-2xl font-bold text-brand-charcoal">27 món ăn</div>
+            <p class="text-xs text-gray-500">Tải trang 3, nối tiếp thành 27 món. URL tự cập nhật <code>page=3</code>.</p>
+          </div>
+        </div>
+
+        <!-- Scenario Comparison -->
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="p-5 rounded-2xl bg-amber-50 border border-amber-200 space-y-3">
+            <h4 class="font-bold text-amber-900 text-sm flex items-center gap-2">
+              <span>👤</span> Phía Người Gửi (Đã xem đến 27 món)
+            </h4>
+            <ul class="text-xs text-amber-900 space-y-2 leading-relaxed">
+              <li>• Tại thời điểm có 27 món, URL trên trình duyệt là:
+                <div class="my-1.5 p-2 bg-white rounded border border-amber-300 font-mono text-[11px] text-amber-900 break-all">
+                  http://localhost:5173/dishes?page=3&displayMode=load_more
+                </div>
+              </li>
+              <li>• Người dùng nhấn nút <strong>"Chia sẻ trang này"</strong> (ShareButton), link được sao chép vào bộ nhớ tạm để gửi cho bạn bè.</li>
+            </ul>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-3">
+            <h4 class="font-bold text-emerald-900 text-sm flex items-center gap-2">
+              <span>👥</span> Phía Người Nhận (Khôi phục đủ 27 món ngay từ đầu)
+            </h4>
+            <ul class="text-xs text-emerald-900 space-y-2 leading-relaxed">
+              <li>• Khi người bạn mở liên kết trên, hook <code>usePaginatedList</code> phát hiện <code>startPage = 3</code> và chế độ <code>load_more</code> (hoặc <code>infinite</code>).</li>
+              <li>• <strong>KHÔI PHỤC TOÀN BỘ:</strong> Client gửi song song truy vấn nạp các trang 1, 2 và 3, ghép nối dữ liệu không trùng lặp và <strong>hiển thị đủ 27 món ăn ngay từ đầu</strong>.</li>
+              <li>• <strong>TIẾP TỤC TRẢI NGHIỆM:</strong> Người nhận vẫn có nút "Xem Thêm" để tải tiếp trang 4 (thành 36 món) một cách liền mạch!</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-gray-200 text-xs text-gray-600 flex items-center gap-3">
+          <span class="text-2xl">💡</span>
+          <div>
+            <strong>Numbered Pagination vẫn giữ tính độc lập:</strong> Nếu người dùng đang ở chế độ <em>Trang số (Numbered)</em> với <code>?page=3&displayMode=numbered</code>, người nhận chỉ mở riêng 9 món của trang 3 (chuẩn phân trang truyền thống). Phương án A áp dụng thông minh cho <em>Load More</em> và <em>Infinite Scroll</em>.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: DECISION MATRIX & IMPLEMENTATION -->
+    <section id="decision-matrix" class="scroll-mt-20">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-xl bg-brand-charcoal text-white flex items-center justify-center font-bold text-sm">06</span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-brand-charcoal">Tiến Trình Tiếp Nhận & Hiện Thực Hóa Quyết Định</h2>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8 rounded-3xl shadow-sm space-y-6">
+        <p class="text-gray-700 leading-relaxed text-sm">
+          Dưới đây là bảng đối chiếu chi tiết giữa <strong>các chỉ đạo / quyết định từ người dùng</strong> sau đợt Audit và <strong>cách thức hiện thực hóa cụ thể trong mã nguồn</strong>:
+        </p>
+
+        <div class="space-y-4">
+          <!-- Item 1 -->
+          <div class="p-4 rounded-2xl bg-white border border-gray-200 hover:border-brand-olive transition">
+            <div class="flex items-center justify-between text-xs font-bold text-gray-500 mb-1">
+              <span>QUYẾT ĐỊNH 01: DATABASE EXTENSION</span>
+              <span class="text-emerald-600">ĐÃ THỰC THI</span>
+            </div>
+            <h4 class="font-bold text-brand-charcoal text-base">Cho phép kích hoạt extension pg_trgm & unaccent trên Supabase</h4>
+            <p class="text-xs text-gray-600 mt-1">
+              <strong>Hiện thực:</strong> Đã chạy câu lệnh <code>CREATE EXTENSION IF NOT EXISTS pg_trgm; CREATE EXTENSION IF NOT EXISTS unaccent;</code> qua script migration an toàn trên Supabase. Viết module <a href="#" class="text-brand-olive underline">api/src/services/search.js</a> áp dụng <code>word_similarity</code> và <code>plainto_tsquery</code>.
+            </p>
+          </div>
+
+          <!-- Item 2 -->
+          <div class="p-4 rounded-2xl bg-white border border-gray-200 hover:border-brand-olive transition">
+            <div class="flex items-center justify-between text-xs font-bold text-gray-500 mb-1">
+              <span>QUYẾT ĐỊNH 02: BẢO VỆ PHẠM VI NGHIỆP VỤ</span>
+              <span class="text-emerald-600">ĐÃ THỰC THI</span>
+            </div>
+            <h4 class="font-bold text-brand-charcoal text-base">Lọc & sắp xếp theo giá chỉ áp dụng duy nhất cho Món ăn</h4>
+            <p class="text-xs text-gray-600 mt-1">
+              <strong>Hiện thực:</strong> Giữ nguyên logic <code>minPrice</code>, <code>maxPrice</code> và sort giá tăng/giảm ở <code>/api/dishes</code> và <code>DishListPage.tsx</code>. Tuyệt đối không thêm bộ lọc giá vào đầu bếp hay nguyên liệu.
+            </p>
+          </div>
+
+          <!-- Item 3 -->
+          <div class="p-4 rounded-2xl bg-white border border-gray-200 hover:border-brand-olive transition">
+            <div class="flex items-center justify-between text-xs font-bold text-gray-500 mb-1">
+              <span>QUYẾT ĐỊNH 03: PHÂN BIỆT PHÂN TRANG CÔNG KHAI VÀ QUẢN TRỊ</span>
+              <span class="text-emerald-600">ĐÃ THỰC THI</span>
+            </div>
+            <h4 class="font-bold text-brand-charcoal text-base">Giữ nguyên Numbered Pagination tại Quản trị, nâng cấp 3 chế độ ở Công khai</h4>
+            <p class="text-xs text-gray-600 mt-1">
+              <strong>Hiện thực:</strong> Khu vực <code>/admin/dishes</code>, <code>/admin/chefs</code>, <code>/admin/ingredients</code> giữ nguyên 100% component phân trang số 10 mục/trang. Khu công khai có thanh selector 3 chế độ (Trang số, Xem thêm, Cuộn vô tận) với custom hook <code>usePaginatedList.ts</code>.
+            </p>
+          </div>
+
+          <!-- Item 4 -->
+          <div class="p-4 rounded-2xl bg-white border border-gray-200 hover:border-brand-olive transition">
+            <div class="flex items-center justify-between text-xs font-bold text-gray-500 mb-1">
+              <span>QUYẾT ĐỊNH 04: LƯU TRỮ TRẠNG THÁI BOOKMARK</span>
+              <span class="text-emerald-600">ĐÃ THỰC THI</span>
+            </div>
+            <h4 class="font-bold text-brand-charcoal text-base">Lưu trữ ở Root App qua localStorage, không làm hệ thống tài khoản phức tạp</h4>
+            <p class="text-xs text-gray-600 mt-1">
+              <strong>Hiện thực:</strong> Tạo <code>UserPreferencesContext.tsx</code> bọc tại <code>App.tsx</code>. Chỉ lưu ID danh sách món ăn, đầu bếp, nguyên liệu. Tạo trang <code>/bookmarks</code> riêng biệt tự động fetch dữ liệu thật từ API và tự làm sạch bản ghi bị xóa.
+            </p>
+          </div>
+
+          <!-- Item 5 -->
+          <div class="p-4 rounded-2xl bg-white border border-gray-200 hover:border-brand-olive transition">
+            <div class="flex items-center justify-between text-xs font-bold text-gray-500 mb-1">
+              <span>QUYẾT ĐỊNH 05: SEEDING DỮ LIỆU THỰC TẾ LỚN</span>
+              <span class="text-emerald-600">ĐÃ THỰC THI</span>
+            </div>
+            <h4 class="font-bold text-brand-charcoal text-base">Seeding thêm 1.000 món ăn vào Supabase không cần ảnh</h4>
+            <p class="text-xs text-gray-600 mt-1">
+              <strong>Hiện thực:</strong> Viết script <code>api/scripts/seed-1000-dishes.mjs</code> chèn thành công 1.000 món ăn chuẩn ẩm thực 3 miền, nâng tổng số món trong cơ sở dữ liệu lên <strong>1.002 món</strong>. Toàn bộ tính năng phân trang, cuộn vô tận và tìm kiếm đã được kiểm nghiệm chịu tải mượt mà.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-brand-charcoal text-white py-12 border-t border-brand-sand/20">
+    <div class="max-w-6xl mx-auto px-4 text-center space-y-4">
+      <div class="font-serif text-2xl font-bold tracking-wider text-brand-sand">Ấm Vị — Food Editorial</div>
+      <p class="text-xs text-gray-400 max-w-lg mx-auto">
+        Tài liệu kỹ thuật và báo cáo nghiệm thu hệ thống REST API & SPA. Hệ thống đã sẵn sàng đưa vào vận hành và chấm điểm.
+      </p>
+      <div class="pt-4 text-[11px] text-gray-500">
+        © 2026 Ấm Vị. Built with React 19, TypeScript, Express, Prisma & PostgreSQL on Supabase.
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
