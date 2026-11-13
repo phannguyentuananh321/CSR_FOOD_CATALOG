@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import Alert from '../../components/Alert';
@@ -141,8 +141,32 @@ export default function DishFormPage() {
     );
   }
 
-  const ingredients: Ingredient[] = ingredientOptions.state.status === 'success' ? ingredientOptions.state.data.data : [];
-  const chefs: Chef[] = chefOptions.state.status === 'success' ? chefOptions.state.data.data : [];
+  const rawIngredients: Ingredient[] =
+    ingredientOptions.state.status === 'success' ? ingredientOptions.state.data.data : [];
+  const rawChefs: Chef[] =
+    chefOptions.state.status === 'success' ? chefOptions.state.data.data : [];
+
+  const ingredients = useMemo(() => {
+    const map = new Map<number, Ingredient>();
+    for (const item of rawIngredients) map.set(item.id, item);
+    if (isEdit && detail.state.status === 'success' && detail.state.data.ingredients) {
+      for (const item of detail.state.data.ingredients) {
+        if (!map.has(item.id)) map.set(item.id, item as Ingredient);
+      }
+    }
+    return Array.from(map.values());
+  }, [rawIngredients, isEdit, detail.state]);
+
+  const chefs = useMemo(() => {
+    const map = new Map<number, Chef>();
+    for (const item of rawChefs) map.set(item.id, item);
+    if (isEdit && detail.state.status === 'success' && detail.state.data.chefs) {
+      for (const item of detail.state.data.chefs) {
+        if (!map.has(item.id)) map.set(item.id, item as Chef);
+      }
+    }
+    return Array.from(map.values());
+  }, [rawChefs, isEdit, detail.state]);
 
   const toggle = (setter: React.Dispatch<React.SetStateAction<number[]>>) => (id: number, checked: boolean) =>
     setter((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
@@ -229,15 +253,21 @@ export default function DishFormPage() {
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
             <RelationChecklist
               title="🥬 Nguyên Liệu"
+              searchPlaceholder="Tìm tên hoặc đơn vị nguyên liệu..."
               createLink="/admin/ingredients/new"
               createLabel="+ Tạo nguyên liệu"
               emptyMessage="Chưa có nguyên liệu nào trong hệ thống. Hãy tạo nguyên liệu trước khi gán vào món ăn."
-              options={ingredients.map((i) => ({ id: i.id, label: i.name, sub: i.unit }))}
+              options={ingredients.map((i) => ({
+                id: i.id,
+                label: i.name,
+                sub: i.unit ? `Đơn vị: ${i.unit}` : i.category ?? null,
+              }))}
               selectedIds={ingredientIds}
               onToggle={toggle(setIngredientIds)}
             />
             <RelationChecklist
               title="👨‍🍳 Đầu Bếp"
+              searchPlaceholder="Tìm tên hoặc chức danh đầu bếp..."
               createLink="/admin/chefs/new"
               createLabel="+ Tạo đầu bếp"
               emptyMessage="Chưa có đầu bếp nào trong hệ thống. Hãy tạo hồ sơ đầu bếp trước khi gán vào món ăn."

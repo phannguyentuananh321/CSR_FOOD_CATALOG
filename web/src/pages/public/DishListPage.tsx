@@ -1,12 +1,15 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import FeaturedCarousel from '../../components/FeaturedCarousel';
-import VantaBirdsBackground from '../../components/VantaBirdsBackground';
+import PaginationControls from '../../components/PaginationControls';
+import PaginationModeSelector from '../../components/PaginationModeSelector';
+import ShareButton from '../../components/ShareButton';
 import { DishCard } from '../../components/cards';
-import Pagination from '../../components/Pagination';
 import { EmptyState, ErrorPanel, LoadingBlock } from '../../components/States';
+import VantaBirdsBackground from '../../components/VantaBirdsBackground';
 import { useFetch } from '../../hooks/useFetch';
+import { usePaginatedList } from '../../hooks/usePaginatedList';
 import type { Dish } from '../../types';
 
 const SORT_OPTIONS = [
@@ -24,27 +27,43 @@ export default function DishListPage() {
   const minPrice = searchParams.get('minPrice') ?? '';
   const maxPrice = searchParams.get('maxPrice') ?? '';
   const sort = searchParams.get('sort') ?? 'newest';
-  const page = searchParams.get('page') ?? '1';
 
   const [form, setForm] = useState({ q, category, minPrice, maxPrice, sort });
-  // Chỉ đồng bộ lại form khi URL đổi (phân trang, đặt lại...).
-  // Không đồng bộ trong lúc render vì sẽ ghi đè ngay ký tự người dùng đang nhập.
   useEffect(() => {
     setForm({ q, category, minPrice, maxPrice, sort });
   }, [q, category, minPrice, maxPrice, sort]);
 
-  const listParams: Record<string, string | number | undefined> = {
-    q: q || undefined,
-    category: category || undefined,
-    minPrice: minPrice || undefined,
-    maxPrice: maxPrice || undefined,
-    sort,
-    page,
-  };
-  const { state, retry } = useFetch(
-    () => api.dishes.list(listParams),
-    [q, category, minPrice, maxPrice, sort, page]
+  const listParams = useMemo(
+    () => ({
+      q: q || undefined,
+      category: category || undefined,
+      minPrice: minPrice || undefined,
+      maxPrice: maxPrice || undefined,
+      sort,
+    }),
+    [q, category, minPrice, maxPrice, sort]
   );
+  const filterKey = `${q}|${category}|${minPrice}|${maxPrice}|${sort}`;
+
+  const {
+    items,
+    meta,
+    loading,
+    loadingMore,
+    error,
+    currentMode,
+    currentPage,
+    hasMore,
+    changeMode,
+    loadNextPage,
+    makePageLink,
+    sentinelRef,
+    retry,
+  } = usePaginatedList<Dish>({
+    fetchFn: api.dishes.list,
+    filterParams: listParams,
+    filterKey,
+  });
 
   const featured = useFetch(() => api.dishes.list({ featured: 1, limit: 4 }), []);
   const featuredDishes: Dish[] =
@@ -58,16 +77,13 @@ export default function DishListPage() {
     if (form.minPrice) next.set('minPrice', form.minPrice);
     if (form.maxPrice) next.set('maxPrice', form.maxPrice);
     if (form.sort && form.sort !== 'newest') next.set('sort', form.sort);
+    if (searchParams.get('displayMode')) {
+      next.set('displayMode', searchParams.get('displayMode')!);
+    }
     setSearchParams(next);
   };
 
-  const makePageLink = (p: number) => {
-    const next = new URLSearchParams(searchParams);
-    next.set('page', String(p));
-    return `/dishes?${next.toString()}`;
-  };
-
-  const categories = state.status === 'success' ? (state.data.meta.categories ?? []) : [];
+  const categories = meta.categories ?? [];
 
   return (
     <div>
@@ -111,7 +127,7 @@ export default function DishListPage() {
         </div>
       </section>
 
-      {/* Danh mục */}
+      {/* Danh mục & Bộ lọc */}
       <section id="menu-catalog" className="mx-auto max-w-[1280px] scroll-mt-24 px-4 py-12 sm:px-6 lg:px-8">
         <div className="rounded-2xl border border-sand bg-ivory p-5 sm:p-6">
           <form
@@ -124,7 +140,7 @@ export default function DishListPage() {
                 type="text"
                 value={form.q}
                 onChange={(e) => setForm({ ...form, q: e.target.value })}
-                placeholder="Nhập tên món ăn..."
+                placeholder="Tìm tên, mô tả, danh mục..."
                 className="w-full rounded-xl border border-sand-dark bg-ivory px-4 py-2.5 text-sm outline-none transition focus:border-olive focus:ring-2 focus:ring-olive/20"
               />
             </label>
@@ -195,22 +211,30 @@ export default function DishListPage() {
           </form>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-end justify-between gap-3">
+        {/* Header danh sách & Chuyển chế độ phân trang */}
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="font-serif text-3xl font-semibold text-charcoal">Danh Sách Món Ăn</h2>
-            {state.status === 'success' && (
-              <p className="mt-2 text-sm text-muted">{state.data.meta.total} món ăn sẵn sàng phục vụ</p>
+            {!loading && (
+              <p className="mt-1 text-sm text-muted">
+                {meta.total} món ăn sẵn sàng phục vụ
+                {currentMode !== 'numbered' && items.length > 0 && ` • Đang hiển thị ${items.length} món`}
+              </p>
             )}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <ShareButton label="Chia sẻ trang này" />
+            <PaginationModeSelector currentMode={currentMode} onModeChange={changeMode} />
           </div>
         </div>
 
-        {state.status === 'loading' && <LoadingBlock />}
-        {state.status === 'error' && (
+        {loading && <LoadingBlock />}
+        {error && (
           <div className="mt-8">
-            <ErrorPanel message={state.message} onRetry={retry} />
+            <ErrorPanel message={error} onRetry={retry} />
           </div>
         )}
-        {state.status === 'success' && state.data.data.length === 0 && (
+        {!loading && !error && items.length === 0 && (
           <div className="mt-8">
             <EmptyState
               title="Không Tìm Thấy Món Ăn Phù Hợp"
@@ -220,14 +244,23 @@ export default function DishListPage() {
             />
           </div>
         )}
-        {state.status === 'success' && state.data.data.length > 0 && (
+        {!loading && !error && items.length > 0 && (
           <>
             <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {state.data.data.map((dish) => (
+              {items.map((dish) => (
                 <DishCard key={dish.id} dish={dish} />
               ))}
             </div>
-            <Pagination meta={state.data.meta} makeLink={makePageLink} />
+            <PaginationControls
+              meta={{ ...meta, page: currentPage }}
+              currentMode={currentMode}
+              hasMore={hasMore}
+              loadingMore={loadingMore}
+              onLoadMore={loadNextPage}
+              makeLink={makePageLink}
+              sentinelRef={sentinelRef}
+              itemName="món ăn"
+            />
           </>
         )}
       </section>

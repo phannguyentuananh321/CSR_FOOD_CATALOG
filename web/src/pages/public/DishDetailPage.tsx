@@ -1,6 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
+import BookmarkButton from '../../components/BookmarkButton';
 import EntityImage from '../../components/EntityImage';
+import ShareButton from '../../components/ShareButton';
 import { ErrorPanel, LoadingBlock, NotFoundPanel } from '../../components/States';
 import { useFetch } from '../../hooks/useFetch';
 import type { Dish } from '../../types';
@@ -36,12 +38,16 @@ export default function DishDetailPage() {
         <Link to="/dishes" className="text-sm font-semibold text-olive underline-offset-4 hover:underline">
           ← Quay lại Danh Sách Thực Đơn
         </Link>
-        <Link
-          to={`/admin/dishes/${dish.id}/edit`}
-          className="text-sm font-semibold text-terracotta underline-offset-4 hover:underline"
-        >
-          ✎ Quản trị món này
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <BookmarkButton type="dishes" id={dish.id} showText />
+          <ShareButton />
+          <Link
+            to={`/admin/dishes/${dish.id}/edit`}
+            className="text-sm font-semibold text-terracotta underline-offset-4 hover:underline"
+          >
+            ✎ Quản trị món này
+          </Link>
+        </div>
       </div>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-2">

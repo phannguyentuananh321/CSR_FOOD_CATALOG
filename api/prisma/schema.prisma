@@ -8,67 +8,161 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Dish {
-  id          Int              @id @default(autoincrement())
-  name        String           @db.VarChar(100)
-  description String?          @db.Text
-  price       Int              @default(0)
-  category    String           @default("Món chính") @db.VarChar(100)
-  imagePath   String?          @db.VarChar(500)
-  isFeatured  Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  chefs       DishChef[]
-  ingredients DishIngredient[]
-
-  @@map("dishes")
+model ActivationChallenge {
+  id              String    @id
+  userId          String    @unique
+  purpose         String    @default("activation")
+  otpHash         String
+  expiresAt       DateTime
+  usedAt          DateTime?
+  attempts        Int       @default(0)
+  lockedUntil     DateTime?
+  lastSentAt      DateTime  @default(now())
+  sendCount       Int       @default(1)
+  sendWindowStart DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  User            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Chef {
   id          Int        @id @default(autoincrement())
-  name        String     @db.VarChar(100)
-  title       String?    @db.VarChar(150)
-  description String?    @db.Text
-  experience  String?    @db.VarChar(150)
-  imagePath   String?    @db.VarChar(500)
+  name        String
+  title       String?
+  description String?
+  experience  String?
+  imagePath   String?
   isFeatured  Boolean    @default(false)
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  updatedAt   DateTime
   dishes      DishChef[]
 
-  @@map("chefs")
+  @@index([createdAt])
 }
 
-model Ingredient {
-  id          Int              @id @default(autoincrement())
-  name        String           @db.VarChar(100)
-  category    String?          @db.VarChar(100)
-  description String?          @db.Text
-  unit        String?          @default("gram") @db.VarChar(50)
-  imagePath   String?          @db.VarChar(500)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  dishes      DishIngredient[]
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model Dish {
+  id             Int              @id @default(autoincrement())
+  name           String
+  description    String?
+  price          Int              @default(0)
+  category       String           @default("Món chính")
+  imagePath      String?
+  isFeatured     Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  chefs          DishChef[]
+  ingredients    DishIngredient[]
 
-  @@map("ingredients")
+  @@index([category])
+  @@index([createdAt])
+  @@index([price])
 }
 
 model DishChef {
-  dish   Dish @relation(fields: [dishId], references: [id], onDelete: Cascade)
-  dishId Int
-  chef   Chef @relation(fields: [chefId], references: [id], onDelete: Cascade)
-  chefId Int
+  id        Int      @id @default(autoincrement())
+  dishId    Int
+  chefId    Int
+  createdAt DateTime @default(now())
+  chef      Chef     @relation(fields: [chefId], references: [id])
+  dish      Dish     @relation(fields: [dishId], references: [id], onDelete: Cascade)
 
-  @@id([dishId, chefId])
-  @@map("dish_chefs")
+  @@unique([dishId, chefId])
+  @@index([chefId])
+  @@index([dishId])
 }
 
 model DishIngredient {
-  dish         Dish       @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  id           Int        @id @default(autoincrement())
   dishId       Int
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
   ingredientId Int
+  createdAt    DateTime   @default(now())
+  dish         Dish       @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
 
-  @@id([dishId, ingredientId])
-  @@map("dish_ingredients")
+  @@unique([dishId, ingredientId])
+  @@index([dishId])
+  @@index([ingredientId])
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model Ingredient {
+  id          Int              @id @default(autoincrement())
+  name        String
+  category    String?          @default("Gia vị")
+  description String?
+  unit        String?          @default("gram")
+  imagePath   String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime
+  dishes      DishIngredient[]
+
+  @@index([category])
+  @@index([createdAt])
+}
+
+model PasswordReset {
+  id        String    @id
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model RateLimit {
+  key         String    @id
+  count       Int       @default(0)
+  windowStart DateTime  @default(now())
+  lockedUntil DateTime?
+}
+
+model Session {
+  sid       String   @id
+  userId    String?
+  data      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  User      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([userId])
+}
+
+model User {
+  id                  String               @id
+  email               String
+  emailNormalized     String               @unique
+  displayName         String?
+  passwordHash        String
+  role                String               @default("viewer")
+  status              String               @default("pending")
+  emailVerifiedAt     DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime
+  ActivationChallenge ActivationChallenge?
+  PasswordReset       PasswordReset[]
+  Session             Session[]
+  RefreshToken        RefreshToken[]
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  family    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  revokedAt DateTime?
+  userAgent String?
+  ipAddress String?
+  createdAt DateTime  @default(now())
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([family])
 }

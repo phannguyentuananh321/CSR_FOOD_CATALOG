@@ -96,7 +96,16 @@ export function parseListQuery(query, { defaultLimit = 9 } = {}) {
   let limit = Number.isInteger(parsedLimit) && parsedLimit >= 1 ? parsedLimit : defaultLimit;
   limit = Math.min(limit, 50); // giới hạn cứng 50 mục/trang
 
-  return { q, category, minPrice, maxPrice, sort, page, limit };
+  let ids = null;
+  if (query.ids) {
+    const rawIds = Array.isArray(query.ids) ? query.ids : String(query.ids).split(',');
+    const parsed = rawIds
+      .map((x) => Number.parseInt(String(x).trim(), 10))
+      .filter((n) => Number.isInteger(n) && n > 0);
+    if (parsed.length > 0) ids = parsed;
+  }
+
+  return { q, category, minPrice, maxPrice, sort, page, limit, ids };
 }
 
 export function sortToOrderBy(sort) {

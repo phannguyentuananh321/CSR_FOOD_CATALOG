@@ -1,6 +1,8 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { config } from './config.js';
 import { corsMiddleware, errorHandler, notFoundHandler } from './middleware/http.js';
+import { authRouter } from './routes/auth.routes.js';
 import chefsRouter from './routes/chefs.js';
 import dishesRouter from './routes/dishes.js';
 import ingredientsRouter from './routes/ingredients.js';
@@ -12,6 +14,7 @@ export function createApp() {
   app.disable('x-powered-by');
   app.set('trust proxy', false);
   app.use(corsMiddleware);
+  app.use(cookieParser());
   app.use(express.json({ limit: '1mb' }));
 
   // Ảnh lưu ở đĩa cục bộ (chế độ dev không có Supabase) được phục vụ tĩnh.
@@ -21,6 +24,10 @@ export function createApp() {
     res.json({ ok: true, data: { status: 'up', time: new Date().toISOString() } });
   });
 
+  // Authentication routes
+  app.use('/api/auth', authRouter);
+
+  // Business entities
   app.use('/api/dishes', dishesRouter);
   app.use('/api/chefs', chefsRouter);
   app.use('/api/ingredients', ingredientsRouter);

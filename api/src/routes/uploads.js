@@ -15,6 +15,7 @@ import {
   ok,
   validationError,
 } from '../utils/errors.js';
+import { requireAuth, requireAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -45,6 +46,8 @@ const singleUpload = (req, res, next) => {
 // folder nhận một trong: dishes | ingredient | chef (mặc định dishes).
 router.post(
   '/',
+  requireAuth,
+  requireAdmin,
   singleUpload,
   h(async (req, res) => {
     if (!req.file) throw validationError({ file: 'Vui lòng chọn một tệp ảnh.' });

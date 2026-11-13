@@ -83,3 +83,11 @@ export interface UploadResult {
 }
 
 export type Notice = { type: 'success' | 'error'; text: string };
+
+export type DisplayMode = 'numbered' | 'load_more' | 'infinite';
+export type BookmarkResourceType = 'dishes' | 'chefs' | 'ingredients';
+export interface BookmarksState {
+  dishes: number[];
+  chefs: number[];
+  ingredients: number[];
+}

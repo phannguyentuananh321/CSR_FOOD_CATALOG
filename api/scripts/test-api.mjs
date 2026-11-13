@@ -6,6 +6,7 @@ const BASE = (process.env.BASE || 'http://localhost:3000').replace(/\/+$/, '');
 let passed = 0;
 let failed = 0;
 const failures = [];
+let adminToken = null;
 
 function check(name, cond, detail = '') {
   if (cond) {
@@ -19,9 +20,15 @@ function check(name, cond, detail = '') {
 }
 
 async function api(method, path, body, headers = {}) {
+  const reqHeaders = { ...headers };
+  if (body !== undefined) reqHeaders['Content-Type'] = 'application/json';
+  if (adminToken && !reqHeaders['Authorization']) {
+    reqHeaders['Authorization'] = `Bearer ${adminToken}`;
+  }
+
   const res = await fetch(`${BASE}${path}`, {
     method,
-    headers: body !== undefined ? { 'Content-Type': 'application/json', ...headers } : headers,
+    headers: reqHeaders,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   let json = null;
@@ -45,8 +52,12 @@ function pngForm() {
 }
 
 async function uploadPng(folder = 'dishes') {
+  const headers = {};
+  if (adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
+
   const res = await fetch(`${BASE}/api/uploads?folder=${encodeURIComponent(folder)}`, {
     method: 'POST',
+    headers,
     body: pngForm(),
   });
   return res.json();
@@ -327,6 +338,18 @@ async function main() {
   if (health.status !== 200) {
     console.error('API không phản hồi. Hãy khởi động API trước (npm run dev trong thư mục api).');
     process.exit(1);
+  }
+
+  // Đăng nhập tài khoản admin để lấy access token phục vụ các endpoint CUD
+  const loginRes = await api('POST', '/api/auth/login', {
+    email: 'admin@amvi.local',
+    password: 'Admin@123456',
+  });
+  if (loginRes.status === 200 && loginRes.json?.accessToken) {
+    adminToken = loginRes.json.accessToken;
+    console.log('  PASS  Đăng nhập admin thành công, lấy access token');
+  } else {
+    console.warn('  WARN  Không đăng nhập được admin, một số thao tác CUD có thể bị chặn 401');
   }
 
   await testDishes();

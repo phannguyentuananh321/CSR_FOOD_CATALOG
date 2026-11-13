@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { removeImage } from '../lib/storage.js';
+import { searchIngredients } from '../services/search.js';
 import { h, inUseError, notFoundError, ok, validationError } from '../utils/errors.js';
 import {
   serializeIngredientDetail,
   serializeIngredientListItem,
 } from '../utils/serializers.js';
+import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import {
   optionalText,
   parseIdParam,
@@ -52,22 +54,47 @@ router.get(
   '/',
   h(async (req, res) => {
     const query = parseListQuery(req.query);
-    const where = {};
-    if (query.q) where.name = { contains: query.q, mode: 'insensitive' };
-    if (query.category) where.category = query.category;
 
-    const [total, rows, categoryRows] = await prisma.$transaction([
-      prisma.ingredient.count({ where }),
-      prisma.ingredient.findMany({
-        where,
-        orderBy: [{ id: 'desc' }],
-        skip: (query.page - 1) * query.limit,
-        take: query.limit,
-        include: { _count: { select: { dishes: true } } },
-      }),
-      prisma.ingredient.findMany({ select: { category: true }, distinct: ['category'] }),
-    ]);
+    let total = 0;
+    let rows = [];
 
+    if (query.q) {
+      const searchResult = await searchIngredients({
+        q: query.q,
+        category: query.category,
+        ids: query.ids,
+        page: query.page,
+        limit: query.limit,
+      });
+      total = searchResult.total;
+      if (searchResult.ids.length > 0) {
+        const found = await prisma.ingredient.findMany({
+          where: { id: { in: searchResult.ids } },
+          include: { _count: { select: { dishes: true } } },
+        });
+        const map = new Map(found.map((item) => [item.id, item]));
+        rows = searchResult.ids.map((id) => map.get(id)).filter(Boolean);
+      }
+    } else {
+      const where = {};
+      if (query.category) where.category = query.category;
+      if (query.ids && query.ids.length > 0) where.id = { in: query.ids };
+
+      const [count, list] = await prisma.$transaction([
+        prisma.ingredient.count({ where }),
+        prisma.ingredient.findMany({
+          where,
+          orderBy: [{ id: 'desc' }],
+          skip: (query.page - 1) * query.limit,
+          take: query.limit,
+          include: { _count: { select: { dishes: true } } },
+        }),
+      ]);
+      total = count;
+      rows = list;
+    }
+
+    const categoryRows = await prisma.ingredient.findMany({ select: { category: true }, distinct: ['category'] });
     const categories = categoryRows
       .map((row) => row.category?.trim())
       .filter((c) => c)
@@ -99,6 +126,8 @@ router.get(
 // POST /api/ingredients
 router.post(
   '/',
+  requireAuth,
+  requireAdmin,
   h(async (req, res) => {
     const { fields, data, hasFieldErrors } = validateIngredientPayload(req.body || {}, {
       isCreate: true,
@@ -116,6 +145,8 @@ router.post(
 // PATCH /api/ingredients/:id
 router.patch(
   '/:id',
+  requireAuth,
+  requireAdmin,
   h(async (req, res) => {
     const id = parseIdParam(req.params.id);
     if (!id) throw notFoundError(INGREDIENT_NOT_FOUND);
@@ -139,6 +170,8 @@ router.patch(
 // DELETE /api/ingredients/:id — bị chặn nếu nguyên liệu đang được dùng.
 router.delete(
   '/:id',
+  requireAuth,
+  requireAdmin,
   h(async (req, res) => {
     const id = parseIdParam(req.params.id);
     if (!id) throw notFoundError(INGREDIENT_NOT_FOUND);

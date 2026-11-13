@@ -18,6 +18,16 @@ export function entityCode(type: 'dish' | 'chef' | 'ingredient', id: number): st
   return `#${prefix}-${id}`;
 }
 
+export function removeVietnameseTones(str: string): string {
+  return (str || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .trim();
+}
+
 export const DEFAULT_DISH_DESCRIPTION =
   'Món ăn mang đậm phong vị Việt Nam, được chế biến từ những nguyên liệu tươi ngon chọn lọc theo công thức độc đáo.';
 
