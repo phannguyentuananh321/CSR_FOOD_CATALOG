@@ -37,13 +37,19 @@ export default function RegisterPage() {
       return;
     }
 
+    // Kiểm tra reCAPTCHA bắt buộc trước khi gửi lên server
+    if (!recaptchaToken) {
+      setErrorMsg('Vui lòng hoàn thành xác thực reCAPTCHA để tiếp tục đăng ký.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await register({
         email,
         password,
         displayName: displayName || undefined,
-        recaptchaToken: recaptchaToken || undefined,
+        recaptchaToken,
       });
 
       navigate(`/activate?email=${encodeURIComponent(res.email || email)}`, {
@@ -56,6 +62,8 @@ export default function RegisterPage() {
       });
     } catch (err: any) {
       setErrorMsg(err.message || 'Đăng ký không thành công. Vui lòng thử lại.');
+      // Reset captcha sau khi lỗi (token cũ không dùng lại được)
+      setRecaptchaToken('');
     } finally {
       setIsSubmitting(false);
     }
@@ -151,17 +159,25 @@ export default function RegisterPage() {
 
           <div className="pt-2">
             <RecaptchaWidget
-              onChange={(tok) => setRecaptchaToken(tok)}
-              onExpired={() => setRecaptchaToken('')}
+              onChange={(tok) => {
+                setRecaptchaToken(tok);
+                // Xóa thông báo lỗi captcha khi người dùng hoàn thành xác thực
+                if (tok && errorMsg.includes('reCAPTCHA')) setErrorMsg('');
+              }}
+              onExpired={() => {
+                setRecaptchaToken('');
+                setErrorMsg('Phiên xác thực reCAPTCHA đã hết hạn. Vui lòng xác thực lại trước khi đăng ký.');
+              }}
             />
           </div>
 
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-xl bg-olive py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-olive-dark disabled:opacity-60"
+            disabled={isSubmitting || !recaptchaToken}
+            title={!recaptchaToken ? 'Hãy hoàn thành xác thực reCAPTCHA trước' : undefined}
+            className="w-full rounded-xl bg-olive py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-olive-dark disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSubmitting ? 'Đang khởi tạo tài khoản...' : 'Đăng ký'}
+            {isSubmitting ? 'Đang khởi tạo tài khoản...' : !recaptchaToken ? '🔒 Hoàn thành reCAPTCHA để tiếp tục' : 'Đăng ký'}
           </button>
         </form>
 

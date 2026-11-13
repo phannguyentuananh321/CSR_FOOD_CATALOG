@@ -111,11 +111,21 @@ authRouter.post('/register', async (req, res, next) => {
       });
     }
 
-    // Optional reCAPTCHA verification if token provided
-    if (recaptchaToken) {
+    // reCAPTCHA bắt buộc khi đăng ký (chống bot tự động tạo tài khoản hàng loạt)
+    // Chỉ bỏ qua nếu secretKey chưa cấu hình (môi trường dev không có key)
+    if (config.recaptcha.secretKey) {
+      if (!recaptchaToken) {
+        return res.status(400).json({
+          error: 'Vui lòng hoàn thành xác thực reCAPTCHA trước khi đăng ký',
+          code: 'CAPTCHA_REQUIRED',
+        });
+      }
       const isCaptchaValid = await verifyRecaptcha(recaptchaToken, ip);
       if (!isCaptchaValid) {
-        return res.status(400).json({ error: 'Xác thực reCAPTCHA không thành công', code: 'INVALID_CAPTCHA' });
+        return res.status(400).json({
+          error: 'Xác thực reCAPTCHA không thành công hoặc đã hết hạn. Vui lòng thử lại.',
+          code: 'INVALID_CAPTCHA',
+        });
       }
     }
 
